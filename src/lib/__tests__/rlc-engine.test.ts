@@ -1,3 +1,4 @@
+import { describe, it, expect } from "vitest";
 import { calcRLC, resonantC, resonantF, sweepF, linspace } from "../rlc-engine";
 import { PARTE_A_BASE, PARTE_B_BASE, PARTE_B, UF } from "../measured-data";
 
