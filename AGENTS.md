@@ -6,38 +6,39 @@ This version has breaking changes — APIs, conventions, and file structure may 
 
 <!-- END:nextjs-agent-rules -->
 
-# Voltio — contexto del proyecto
+# Voltio — project context
 
-Plataforma de TPs de **Electrotécnica I (UTN FRBA)**. App Next.js 16 (App Router) totalmente client-side, en **español**. Sin data fetching de servidor ni middleware. Hermano del proyecto Resonara, del que toma stack y convenciones.
+Coursework platform for **Electrotécnica I (UTN FRBA)**. A fully client-side Next.js 16 (App Router) app, in **Spanish**. No server data fetching, no middleware. Sibling of the Resonara project, from which it takes its stack and conventions.
 
-## TPs
+## Assignments (TPs)
 
-| Ruta                       | TP                                  | Estado |
+| Route                      | Assignment                          | Status |
 | -------------------------- | ----------------------------------- | ------ |
-| `/`                        | Índice de TPs                       | —      |
-| `/resonancia`              | TP1 Resonancia — teoría + objetivos | activo |
-| `/resonancia/parte-a`      | Parte A: RLC serie, varía C         | activo |
-| `/resonancia/parte-b`      | Parte B: RLC serie, varía f         | activo |
-| `/resonancia/cuestionario` | Cuestionario (5 preguntas)          | activo |
+| `/`                        | TP index                            | —      |
+| `/resonancia`              | TP1 Resonance — theory + objectives | active |
+| `/resonancia/parte-a`      | Part A: series RLC, sweeps C        | active |
+| `/resonancia/parte-b`      | Part B: series RLC, sweeps f        | active |
+| `/resonancia/cuestionario` | Questionnaire (5 questions)         | active |
 
-Próximos TPs (trifásica, poliarmónicas, acoplados) entran como `/trifasica/...`, etc. Mantener `TPS` en `src/app/page.tsx` y `LINKS` en `src/components/ui/Nav.tsx` como fuentes autoritativas.
+Upcoming assignments (three-phase, polyharmonic, coupled circuits) are added as `/trifasica/...`, etc. Keep `TPS` in `src/app/page.tsx` and `LINKS` in `src/components/ui/Nav.tsx` as the authoritative sources.
 
-## Arquitectura
+## Architecture
 
-- **Motor**: `src/lib/rlc-engine.ts` es TypeScript puro (sin React); toda la matemática del RLC serie vive ahí. Se testea directo con Jest (`npm test`). No mockear el motor en tests de componentes.
-- **Unidades**: el motor trabaja en SI (L en H, **C en faradios**). Las tablas en `src/lib/measured-data.ts` guardan C en µF y se convierten con `UF` (1e-6) al llamar al motor.
-- **Datos medidos**: `src/lib/measured-data.ts` contiene las tablas transcriptas del enunciado y las constantes de cada ensayo. Los valores R/L/C de la Parte B son **estimados** (el enunciado los deja en blanco) — un único lugar para reemplazar por los reales.
-- **Estado**: cada simulador tiene su Context + `useReducer` en `src/store/`. Parámetros del circuito **fijos** (del TP); lo interactivo es elegir el punto, alternar gráficos y recorrer fasores.
-- **Gráficos**: Canvas 2D puro, sin librería. `charts/LineChart.tsx` es genérico (líneas teóricas + puntos medidos). Cada draw lee el tema dentro del `useEffect` vía `useUI()` (clave `state.theme`) y lo incluye en las deps para redibujar al cambiar de tema.
-- **Dark mode**: class-based (`.dark` en `<html>`). Tailwind v4 necesita `@custom-variant dark (&:where(.dark, .dark *))` en `globals.css` (ya presente). El tema lo maneja `ui-store.tsx` + script inline en `layout.tsx`.
-- **Formato**: `fmt(n, dec)` (`src/lib/format.ts`) devuelve `'—'` para valores no finitos y usa **coma decimal**. Usarlo para toda métrica derivada.
+- **Engine**: `src/lib/rlc-engine.ts` is pure TypeScript (no React); all the series-RLC math lives there. It is tested directly with Vitest (`npm test`). Do not mock the engine in component tests.
+- **Units**: the engine works in SI (L in H, **C in farads**). The tables in `src/lib/measured-data.ts` store C in µF and convert with `UF` (1e-6) when calling the engine.
+- **Measured data**: `src/lib/measured-data.ts` holds the tables transcribed from the report (`lab-resonancia.pdf`) and the constants for each experiment. The Part B R/L/C values are **estimated** (the assignment leaves them blank; `PARTE_B_ESTIMADO` flag) — a single place to replace with the real ones. `PARTE_B_RESONANCIA` derives the measured resonance row (max U_RS) and is the authoritative source for citing the peak in conclusions and the questionnaire.
+- **Analysis vs measurement**: Part A conclusions quantify with the engine (Q, I_max); the questionnaire and Part B conclusions **cite measured values** (`PARTE_B_RESONANCIA`), not calculations from the estimates, except for hypothetical scenarios (e.g. Part B at 50 Hz), which are labeled as theoretical projections.
+- **State**: each simulator has its own Context + `useReducer` in `src/store/`. Circuit parameters are **fixed** (from the assignment); what's interactive is picking the operating point, toggling charts, and stepping through phasors.
+- **Charts**: plain Canvas 2D, no library. `charts/LineChart.tsx` is generic (theoretical lines + measured points). Each draw reads the theme inside the `useEffect` via `useUI()` (key `state.theme`) and includes it in the deps so it redraws on theme change.
+- **Dark mode**: class-based (`.dark` on `<html>`). Tailwind v4 needs `@custom-variant dark (&:where(.dark, .dark *))` in `globals.css` (already present). The theme is managed by `ui-store.tsx` + an inline script in `layout.tsx`.
+- **Formatting**: `fmt(n, dec)` (`src/lib/format.ts`) returns `'—'` for non-finite values and uses a **decimal comma**. Use it for every derived metric.
 
-## Invariantes
+## Invariants
 
-- C = 0 ⇒ capacitor abierto: `calcRLC` devuelve I = 0, U_C = U, Z = ∞ (nunca divide por cero).
-- `RLCResult` incluye `R` y `RL` para que los diagramas reconstruyan los fasores.
-- Todo string visible va en español; no hay capa i18n.
+- C = 0 ⇒ open capacitor: `calcRLC` returns I = 0, U_C = U, Z = ∞ (never divides by zero).
+- `RLCResult` includes `R` and `RL` so the diagrams can reconstruct the phasors.
+- Every visible string is in Spanish; there is no i18n layer.
 
 ## Testing
 
-`npm test` corre `src/lib/__tests__/rlc-engine.test.ts`: valida el motor contra puntos medidos del lab (con tolerancia para la dispersión) y los valores de resonancia. Mantenerlos verdes.
+`npm test` runs `src/lib/__tests__/rlc-engine.test.ts`: it validates the engine against the lab's measured points (with tolerance for scatter) and the resonance values. Keep them green.
