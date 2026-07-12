@@ -1,22 +1,22 @@
 import type { RLCInput } from "./types";
 
-/** Factor de conversión µF → F. */
+/** µF → F conversion factor. */
 export const UF = 1e-6;
 
 // ===========================================================================
-//  PARTE A — circuito RLC serie, se varía C con f = 50 Hz fija (Variac 50 V)
+//  PART A — series RLC circuit, C is varied with f = 50 Hz fixed (Variac 50 V)
 // ===========================================================================
 
-/** Datos del circuito de la Parte A (enunciado, pág. 6). */
-export const PARTE_A = {
-  U: 50, // V (tensión mantenida constante en el ensayo)
+/** Part A circuit data (assignment sheet, p. 6). */
+export const PART_A = {
+  U: 50, // V (voltage held constant during the test)
   R: 301, // Ω
   RL: 6.3, // Ω
   L: 0.03, // H
   f: 50, // Hz
 } as const;
 
-export interface ParteARow {
+export interface PartARow {
   C: number; // µF
   I: number; // A
   UR: number; // V
@@ -25,8 +25,8 @@ export interface ParteARow {
   P: number; // W
 }
 
-/** Tabla de valores medidos en el laboratorio (Parte A). */
-export const PARTE_A_MEDIDO: ParteARow[] = [
+/** Table of values measured in the lab (Part A). */
+export const PART_A_MEASURED: PartARow[] = [
   { C: 63, I: 0.154, UR: 46.2, UL: 1.69, UC: 7.6, P: 7.5 },
   { C: 55, I: 0.154, UR: 45.9, UL: 1.68, UC: 8.63, P: 7.5 },
   { C: 47, I: 0.152, UR: 45.7, UL: 1.66, UC: 10.04, P: 7.5 },
@@ -38,50 +38,50 @@ export const PARTE_A_MEDIDO: ParteARow[] = [
   { C: 0, I: 0, UR: 0, UL: 0, UC: 50, P: 0 },
 ];
 
-/** Base del motor para la Parte A (todo fijo salvo C). C se pasa en faradios. */
-export const PARTE_A_BASE: Omit<RLCInput, "C"> = {
-  U: PARTE_A.U,
-  R: PARTE_A.R,
-  RL: PARTE_A.RL,
-  L: PARTE_A.L,
-  f: PARTE_A.f,
+/** Engine base for Part A (everything fixed except C). C is passed in farads. */
+export const PART_A_BASE: Omit<RLCInput, "C"> = {
+  U: PART_A.U,
+  R: PART_A.R,
+  RL: PART_A.RL,
+  L: PART_A.L,
+  f: PART_A.f,
 };
 
-/** Primer valor de C de la tabla (µF) — usado para el barrido de frecuencia (punto 6d). */
-export const PARTE_A_C_PRIMERO = PARTE_A_MEDIDO[0].C; // 63 µF
+/** First C value in the table (µF) — used for the frequency sweep (point 6d). */
+export const PART_A_FIRST_C = PART_A_MEASURED[0].C; // 63 µF
 
 // ===========================================================================
-//  PARTE B — circuito RLC serie, se varía f con R/L/C fijos (GAF ~4 V)
+//  PART B — series RLC circuit, f is varied with fixed R/L/C (GAF ~4 V)
 // ===========================================================================
 
 /**
- * Valores de los elementos de la Parte B.
- * El enunciado deja en blanco R/L/C ("Aquí colocar valores medidos"); estos son
- * ESTIMADOS a partir de la curva medida (reproducen f0 ≈ 509 Hz y Q ≈ 10,8).
- * Reemplazar por los valores reales registrados por el grupo.
+ * Values of the Part B elements.
+ * The assignment sheet leaves R/L/C blank ("insert measured values here"); these are
+ * ESTIMATED from the measured curve (they reproduce f0 ≈ 509 Hz and Q ≈ 10.8).
+ * Replace with the actual values recorded by the group.
  */
-export const PARTE_B = {
-  U: 4, // V (tensión del GAF, nominal constante)
+export const PART_B = {
+  U: 4, // V (GAF voltage, nominally constant)
   R: 220, // Ω
-  RL: 66, // Ω (resistencia interna de la bobina de décadas)
+  RL: 66, // Ω (internal resistance of the decade coil)
   L: 0.98, // H
   C: 0.1, // µF
 } as const;
 
-/** Marca que los valores R/L/C de la Parte B son estimados, no medidos. */
-export const PARTE_B_ESTIMADO = true;
+/** Marks that the Part B R/L/C values are estimated, not measured. */
+export const PART_B_ESTIMATED = true;
 
-export interface ParteBRow {
+export interface PartBRow {
   n: number;
   f: number; // Hz
-  U: number; // V (fuente)
-  URS: number; // V (sobre la resistencia externa R)
+  U: number; // V (source)
+  URS: number; // V (across the external resistance R)
   UC: number; // V
   UL: number; // V
 }
 
-/** Tabla de valores medidos en el laboratorio (Parte B, enunciado pág. 9). */
-export const PARTE_B_MEDIDO: ParteBRow[] = [
+/** Table of values measured in the lab (Part B, assignment sheet p. 9). */
+export const PART_B_MEASURED: PartBRow[] = [
   { n: 1, f: 151, U: 4.03, URS: 0.092, UC: 4.4, UL: 0.378 },
   { n: 2, f: 250, U: 4.02, URS: 0.184, UC: 5.27, UL: 1.261 },
   { n: 3, f: 352, U: 4.01, URS: 0.353, UC: 7.35, UL: 3.34 },
@@ -96,14 +96,14 @@ export const PARTE_B_MEDIDO: ParteBRow[] = [
   { n: 12, f: 1009, U: 4, URS: 0.19, UC: 1.34, UL: 5.35 },
 ];
 
-/** Fila de resonancia medida de la Parte B (I y U_RS máximas, N°6 ≈ 509 Hz). */
-export const PARTE_B_RESONANCIA = PARTE_B_MEDIDO.reduce((a, b) => (b.URS > a.URS ? b : a));
+/** Measured resonance row of Part B (maximum I and U_RS, #6 ≈ 509 Hz). */
+export const PART_B_RESONANCE = PART_B_MEASURED.reduce((a, b) => (b.URS > a.URS ? b : a));
 
-/** Base del motor para la Parte B (todo fijo salvo f). C convertido a faradios. */
-export const PARTE_B_BASE: Omit<RLCInput, "f"> = {
-  U: PARTE_B.U,
-  R: PARTE_B.R,
-  RL: PARTE_B.RL,
-  L: PARTE_B.L,
-  C: PARTE_B.C * UF,
+/** Engine base for Part B (everything fixed except f). C converted to farads. */
+export const PART_B_BASE: Omit<RLCInput, "f"> = {
+  U: PART_B.U,
+  R: PART_B.R,
+  RL: PART_B.RL,
+  L: PART_B.L,
+  C: PART_B.C * UF,
 };

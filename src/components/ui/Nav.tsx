@@ -6,9 +6,9 @@ import { usePathname } from "next/navigation";
 const LINKS = [
   { href: "/", label: "Inicio" },
   { href: "/resonancia", label: "Teoría" },
-  { href: "/resonancia/parte-a", label: "Parte A" },
-  { href: "/resonancia/parte-b", label: "Parte B" },
-  { href: "/resonancia/cuestionario", label: "Cuestionario" },
+  { href: "/resonancia/part-a", label: "Parte A" },
+  { href: "/resonancia/part-b", label: "Parte B" },
+  { href: "/resonancia/questionnaire", label: "Cuestionario" },
 ] as const;
 
 export function Nav() {

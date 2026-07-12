@@ -10,9 +10,9 @@ Coursework platform for **Electrotécnica I (UTN FRBA)**. A fully client-side [N
 | -------------------------- | --------------------------------------------- | ------ |
 | `/`                        | TP index                                      | —      |
 | `/resonancia`              | TP1 Resonance — theory + objectives           | active |
-| `/resonancia/parte-a`      | Part A: series RLC, sweeping C (50 Hz)        | active |
-| `/resonancia/parte-b`      | Part B: series RLC, sweeping frequency (GAF)  | active |
-| `/resonancia/cuestionario` | Questionnaire (5 questions with analysis)     | active |
+| `/resonancia/part-a`        | Part A: series RLC, sweeping C (50 Hz)        | active |
+| `/resonancia/part-b`        | Part B: series RLC, sweeping frequency (GAF)  | active |
+| `/resonancia/questionnaire` | Questionnaire (5 questions with analysis)     | active |
 
 Upcoming assignments (three-phase, polyharmonic, coupled circuits) are added as new routes (`/trifasica/...`, etc.).
 
@@ -33,9 +33,9 @@ src/
     page.tsx                # TP index (TPS array)
     resonancia/             # TP1
       page.tsx              # theory + objectives
-      parte-a/              # C sweep (measured) and f sweep (point 6d)
-      parte-b/              # frequency sweep
-      cuestionario/         # questions + analysis
+      part-a/               # C sweep (measured) and f sweep (point 6d)
+      part-b/               # frequency sweep
+      questionnaire/        # questions + analysis
   components/
     charts/                 # LineChart, PhasorDiagram, ImpedanceTriangle (canvas)
     sim/                    # CircuitSchematic, DataTable, MetricsGrid, etc.

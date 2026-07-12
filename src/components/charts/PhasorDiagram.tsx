@@ -47,7 +47,7 @@ function arrow(
   ctx.fill();
 }
 
-/** Dibuja texto con subíndices (notación "U_L") en canvas, alineado a la izquierda. */
+/** Draws text with subscripts ("U_L" notation) on canvas, left-aligned. */
 function drawWithSub(ctx: CanvasRenderingContext2D, x: number, y: number, str: string) {
   const baseFont = ctx.font;
   const small = baseFont.replace(/(\d+(?:\.\d+)?)px/, (_, n) => `${+n * 0.72}px`);
@@ -114,13 +114,13 @@ export function PhasorDiagram({ result, height = 300 }: PhasorDiagramProps) {
       return;
     }
 
-    // Vectores de tensión en "espacio de volts" (y hacia arriba = +).
+    // Voltage vectors in "volt space" (y upward = +).
     const ULx = I * RL;
     const ULy = I * XL;
     const O = { x: 0, y: 0 };
-    const A = { x: UR, y: 0 }; // tip de UR
-    const B = { x: UR + ULx, y: ULy }; // tip de UL
-    const Cp = { x: UR + ULx, y: ULy - UC }; // tip de UC = tip de U
+    const A = { x: UR, y: 0 }; // UR tip
+    const B = { x: UR + ULx, y: ULy }; // UL tip
+    const Cp = { x: UR + ULx, y: ULy - UC }; // UC tip = U tip
 
     const xs = [O.x, A.x, B.x, Cp.x];
     const ys = [O.y, A.y, B.y, Cp.y];
@@ -134,13 +134,13 @@ export function PhasorDiagram({ result, height = 300 }: PhasorDiagramProps) {
     const pad = 46;
     const scale = Math.min((cssW - 2 * pad) / spanX, (cssH - 2 * pad) / spanY);
 
-    // Origen en pixels: centrar el bounding box.
+    // Origin in pixels: center the bounding box.
     const ox = pad - xMin * scale + (cssW - 2 * pad - spanX * scale) / 2;
     const oy = cssH - pad + yMin * scale - (cssH - 2 * pad - spanY * scale) / 2;
     const px = (x: number) => ox + x * scale;
     const py = (y: number) => oy - y * scale;
 
-    // Ejes de referencia que pasan por el origen.
+    // Reference axes passing through the origin.
     ctx.strokeStyle = isDark ? "#27272a" : "#f1f1f4";
     ctx.lineWidth = 1;
     ctx.beginPath();
@@ -150,7 +150,7 @@ export function PhasorDiagram({ result, height = 300 }: PhasorDiagramProps) {
     ctx.lineTo(px(0), cssH - pad / 2);
     ctx.stroke();
 
-    // Corriente de referencia (eje +x), longitud fija.
+    // Reference current (+x axis), fixed length.
     const iLen = Math.min(70, (cssW - 2 * pad) * 0.35);
     arrow(ctx, px(0), py(0), px(0) + iLen, py(0), iCol, 2, true);
     ctx.fillStyle = iCol;
@@ -158,15 +158,15 @@ export function PhasorDiagram({ result, height = 300 }: PhasorDiagramProps) {
     ctx.textBaseline = "top";
     ctx.fillText("I (ref)", px(0) + iLen + 4, py(0) + 4);
 
-    // Polígono tip-to-tail: UR → UL → UC.
+    // Tip-to-tail polygon: UR → UL → UC.
     arrow(ctx, px(O.x), py(O.y), px(A.x), py(A.y), COL.UR, 2);
     arrow(ctx, px(A.x), py(A.y), px(B.x), py(B.y), COL.UL, 2);
     arrow(ctx, px(B.x), py(B.y), px(Cp.x), py(Cp.y), COL.UC, 2);
 
-    // Resultante U (de origen al tip final), en grueso.
+    // Resultant U (origin to final tip), bolder.
     arrow(ctx, px(O.x), py(O.y), px(Cp.x), py(Cp.y), fg, 3);
 
-    // Etiquetas
+    // Labels
     const label = (
       x: number,
       y: number,
@@ -184,7 +184,7 @@ export function PhasorDiagram({ result, height = 300 }: PhasorDiagramProps) {
     label((px(A.x) + px(B.x)) / 2, (py(A.y) + py(B.y)) / 2, `U_L`, COL.UL);
     label((px(B.x) + px(Cp.x)) / 2, (py(B.y) + py(Cp.y)) / 2, `U_C`, COL.UC);
 
-    // Magnitudes en esquina superior izquierda (sin solaparse ni recortarse)
+    // Magnitudes in the top-left corner (without overlapping or clipping)
     ctx.textAlign = "left";
     ctx.textBaseline = "top";
     ctx.fillStyle = fg;

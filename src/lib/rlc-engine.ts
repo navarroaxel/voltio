@@ -1,8 +1,8 @@
 import type { RLCInput, RLCResult } from "./types";
 
 /**
- * Frecuencia de resonancia f0 = 1 / (2π·√(L·C)).
- * Devuelve NaN si falta algún componente reactivo.
+ * Resonant frequency f0 = 1 / (2π·√(L·C)).
+ * Returns NaN if any reactive component is missing.
  */
 export function resonantF(L: number, C: number): number {
   if (L <= 0 || C <= 0) return NaN;
@@ -10,8 +10,8 @@ export function resonantF(L: number, C: number): number {
 }
 
 /**
- * Capacidad necesaria para resonar a la frecuencia f con la inductancia L:
- * C = 1 / (ω²·L). Útil para el punto 6a de la Parte A.
+ * Capacitance needed to resonate at frequency f with inductance L:
+ * C = 1 / (ω²·L). Useful for Part A's point 6a.
  */
 export function resonantC(L: number, f: number): number {
   if (L <= 0 || f <= 0) return NaN;
@@ -20,8 +20,8 @@ export function resonantC(L: number, f: number): number {
 }
 
 /**
- * Resuelve un circuito RLC serie con bobina real (resistencia interna RL).
- * Maneja C = 0 (capacitor abierto): I = 0 y toda la tensión cae sobre el capacitor.
+ * Solves a series RLC circuit with a real coil (internal resistance RL).
+ * Handles C = 0 (open capacitor): I = 0 and the full voltage falls on the capacitor.
  */
 export function calcRLC(input: RLCInput): RLCResult {
   const { U, R, RL, L, C, f } = input;
@@ -30,7 +30,7 @@ export function calcRLC(input: RLCInput): RLCResult {
   const Rtot = R + RL;
   const f0 = resonantF(L, C);
 
-  // Capacitor abierto: circuito abierto, no circula corriente.
+  // Open capacitor: open circuit, no current flows.
   if (C <= 0) {
     return {
       omega,
@@ -61,7 +61,7 @@ export function calcRLC(input: RLCInput): RLCResult {
   const phiDeg = (Math.atan2(X, Rtot) * 180) / Math.PI;
   const I = U / Z;
   const UR = I * R;
-  const UL = I * Math.hypot(RL, XL); // la bobina real cae I·|RL + jXL|
+  const UL = I * Math.hypot(RL, XL); // the real coil drops I·|RL + jXL|
   const UC = I * XC;
   const P = I * I * Rtot;
   const Qreact = I * I * X;
@@ -92,7 +92,7 @@ export function calcRLC(input: RLCInput): RLCResult {
   };
 }
 
-/** Barre la frecuencia f manteniendo el resto fijo. */
+/** Sweeps frequency f while keeping everything else fixed. */
 export function sweepF(
   base: Omit<RLCInput, "f">,
   fValues: number[],
@@ -100,7 +100,7 @@ export function sweepF(
   return fValues.map((f) => calcRLC({ ...base, f }));
 }
 
-/** Genera `count` frecuencias equiespaciadas en [from, to] (inclusive). */
+/** Generates `count` evenly spaced frequencies in [from, to] (inclusive). */
 export function linspace(from: number, to: number, count: number): number[] {
   if (count <= 1) return [from];
   const step = (to - from) / (count - 1);

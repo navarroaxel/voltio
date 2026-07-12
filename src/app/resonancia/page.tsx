@@ -95,19 +95,19 @@ export default function ResonanciaHub() {
 
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
         <NavCard
-          href="/resonancia/parte-a"
+          href="/resonancia/part-a"
           tag="Parte A"
           title="Varía la capacidad C"
           desc="f = 50 Hz fija. Barrido de C y barrido de frecuencia para f₀."
         />
         <NavCard
-          href="/resonancia/parte-b"
+          href="/resonancia/part-b"
           tag="Parte B"
           title="Varía la frecuencia f"
           desc="R, L, C fijos. Resonancia en ≈509 Hz."
         />
         <NavCard
-          href="/resonancia/cuestionario"
+          href="/resonancia/questionnaire"
           tag="Cuestionario"
           title="5 preguntas"
           desc="Análisis y valores de apoyo calculados."

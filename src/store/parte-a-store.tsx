@@ -2,29 +2,29 @@
 
 import { createContext, useContext, useMemo, useReducer } from "react";
 import { resonantF } from "@/lib/rlc-engine";
-import { PARTE_A_BASE, PARTE_A_C_PRIMERO, UF } from "@/lib/measured-data";
+import { PART_A_BASE, PART_A_FIRST_C, UF } from "@/lib/measured-data";
 
-/** Frecuencia de resonancia para el primer C de la tabla (63 µF) — punto 6c. */
-export const PARTE_A_F0 = resonantF(PARTE_A_BASE.L, PARTE_A_C_PRIMERO * UF);
+/** Resonant frequency for the table's first C (63 µF) — point 6c. */
+export const PART_A_F0 = resonantF(PART_A_BASE.L, PART_A_FIRST_C * UF);
 
 /**
- * 11 frecuencias para el barrido del punto 6d: f0 en el centro, 5 por debajo y
- * 5 por encima, con paso Δf = 15 Hz (tabla de la pág. 9 del enunciado).
+ * 11 frequencies for point 6d's sweep: f0 in the center, 5 below and
+ * 5 above, with step Δf = 15 Hz (table on p. 9 of the assignment sheet).
  */
-export const PARTE_A_FREQS: number[] = Array.from(
+export const PART_A_FREQS: number[] = Array.from(
   { length: 11 },
-  (_, i) => PARTE_A_F0 + (i - 5) * 15,
+  (_, i) => PART_A_F0 + (i - 5) * 15,
 );
-/** Índice de f0 dentro de PARTE_A_FREQS (el del medio). */
-export const PARTE_A_F0_INDEX = 5;
+/** Index of f0 within PART_A_FREQS (the middle one). */
+export const PART_A_F0_INDEX = 5;
 
-export type ViewMode = "barridoC" | "barridoF";
-export type ChartTab = "tensiones" | "iz" | "pq";
+export type ViewMode = "sweepC" | "sweepF";
+export type ChartTab = "voltages" | "iz" | "pq";
 
 interface State {
   viewMode: ViewMode;
-  cIndex: number; // índice en PARTE_A_MEDIDO
-  fIndex: number; // índice en PARTE_A_FREQS
+  cIndex: number; // index in PART_A_MEASURED
+  fIndex: number; // index in PART_A_FREQS
   chartTab: ChartTab;
 }
 
@@ -48,27 +48,27 @@ function reducer(state: State, action: Action): State {
 }
 
 const INITIAL: State = {
-  viewMode: "barridoC",
+  viewMode: "sweepC",
   cIndex: 0,
-  fIndex: PARTE_A_F0_INDEX,
-  chartTab: "tensiones",
+  fIndex: PART_A_F0_INDEX,
+  chartTab: "voltages",
 };
 
-const ParteAContext = createContext<{
+const PartAContext = createContext<{
   state: State;
   dispatch: React.Dispatch<Action>;
 } | null>(null);
 
-export function ParteAProvider({ children }: { children: React.ReactNode }) {
+export function PartAProvider({ children }: { children: React.ReactNode }) {
   const [state, dispatch] = useReducer(reducer, INITIAL);
   const value = useMemo(() => ({ state, dispatch }), [state]);
   return (
-    <ParteAContext.Provider value={value}>{children}</ParteAContext.Provider>
+    <PartAContext.Provider value={value}>{children}</PartAContext.Provider>
   );
 }
 
-export function useParteA() {
-  const ctx = useContext(ParteAContext);
-  if (!ctx) throw new Error("useParteA debe usarse dentro de ParteAProvider");
+export function usePartA() {
+  const ctx = useContext(PartAContext);
+  if (!ctx) throw new Error("usePartA must be used inside PartAProvider");
   return ctx;
 }

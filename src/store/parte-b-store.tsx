@@ -2,15 +2,15 @@
 
 import { createContext, useContext, useMemo, useReducer } from "react";
 import { resonantF } from "@/lib/rlc-engine";
-import { PARTE_B, UF } from "@/lib/measured-data";
+import { PART_B, UF } from "@/lib/measured-data";
 
-/** Frecuencia de resonancia teórica de la Parte B (≈ 509 Hz). */
-export const PARTE_B_F0 = resonantF(PARTE_B.L, PARTE_B.C * UF);
+/** Theoretical resonant frequency for Part B (≈ 509 Hz). */
+export const PART_B_F0 = resonantF(PART_B.L, PART_B.C * UF);
 
-export type ChartTab = "tensiones" | "iz" | "pq";
+export type ChartTab = "voltages" | "iz" | "pq";
 
 interface State {
-  fIndex: number; // índice en PARTE_B_MEDIDO
+  fIndex: number; // index in PART_B_MEASURED
   chartTab: ChartTab;
 }
 
@@ -28,25 +28,25 @@ function reducer(state: State, action: Action): State {
 }
 
 const INITIAL: State = {
-  fIndex: 5, // fila 6: f = 509 Hz (resonancia)
-  chartTab: "tensiones",
+  fIndex: 5, // row 6: f = 509 Hz (resonance)
+  chartTab: "voltages",
 };
 
-const ParteBContext = createContext<{
+const PartBContext = createContext<{
   state: State;
   dispatch: React.Dispatch<Action>;
 } | null>(null);
 
-export function ParteBProvider({ children }: { children: React.ReactNode }) {
+export function PartBProvider({ children }: { children: React.ReactNode }) {
   const [state, dispatch] = useReducer(reducer, INITIAL);
   const value = useMemo(() => ({ state, dispatch }), [state]);
   return (
-    <ParteBContext.Provider value={value}>{children}</ParteBContext.Provider>
+    <PartBContext.Provider value={value}>{children}</PartBContext.Provider>
   );
 }
 
-export function useParteB() {
-  const ctx = useContext(ParteBContext);
-  if (!ctx) throw new Error("useParteB debe usarse dentro de ParteBProvider");
+export function usePartB() {
+  const ctx = useContext(PartBContext);
+  if (!ctx) throw new Error("usePartB must be used inside PartBProvider");
   return ctx;
 }

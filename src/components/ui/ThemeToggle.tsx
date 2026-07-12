@@ -7,7 +7,7 @@ export function ThemeToggle() {
   const { state, dispatch } = useUI();
   const [mounted, setMounted] = useState(false);
   useEffect(() => {
-    // Sólo tras montar evitamos el desajuste de hidratación del ícono.
+    // Only after mounting do we avoid the icon's hydration mismatch.
     // eslint-disable-next-line react-hooks/set-state-in-effect
     setMounted(true);
   }, []);
@@ -27,7 +27,7 @@ export function ThemeToggle() {
       }
       className="rounded-lg border border-neutral-300 p-2 text-neutral-600 transition-colors hover:bg-neutral-100 dark:border-neutral-700 dark:text-neutral-300 dark:hover:bg-neutral-800"
     >
-      {/* Evita mismatch de hidratación: ícono neutro hasta montar */}
+      {/* Avoids hydration mismatch: neutral icon until mounted */}
       {!mounted ? (
         <span className="block h-4 w-4" />
       ) : isDark ? (

@@ -14,7 +14,7 @@ export interface Series {
   label: string;
   color: string;
   points: Point[];
-  /** "line" = curva teórica continua; "scatter" = puntos medidos. */
+  /** "line" = continuous theoretical curve; "scatter" = measured points. */
   kind?: "line" | "scatter";
   dashed?: boolean;
 }
@@ -31,9 +31,9 @@ interface LineChartProps {
   yLabel: string;
   markers?: Marker[];
   height?: number;
-  /** Forzar y mínimo en 0 (por defecto true). */
+  /** Force y minimum to 0 (defaults to true). */
   yFromZero?: boolean;
-  /** Decimales en los ticks del eje Y. */
+  /** Decimal places on the Y-axis ticks. */
   yDecimals?: number;
   xDecimals?: number;
 }
@@ -90,7 +90,7 @@ export function LineChart({
     if (yMin === yMax) {
       yMax += 1;
     }
-    // Margen superior del 8 %.
+    // 8% top margin.
     yMax += (yMax - yMin) * 0.08;
 
     const plotW = cssW - PAD.left - PAD.right;
@@ -99,7 +99,7 @@ export function LineChart({
     const sy = (y: number) =>
       PAD.top + plotH - ((y - yMin) / (yMax - yMin)) * plotH;
 
-    // Grilla + ticks
+    // Grid + ticks
     const TICKS = 5;
     ctx.font = "11px ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto";
     ctx.fillStyle = textColor;
@@ -127,7 +127,7 @@ export function LineChart({
       ctx.fillText(fmt(x, xDecimals), px, cssH - PAD.bottom + 8);
     }
 
-    // Ejes
+    // Axes
     ctx.strokeStyle = axisColor;
     ctx.beginPath();
     ctx.moveTo(PAD.left, PAD.top);
@@ -135,7 +135,7 @@ export function LineChart({
     ctx.lineTo(cssW - PAD.right, cssH - PAD.bottom);
     ctx.stroke();
 
-    // Etiquetas de ejes
+    // Axis labels
     ctx.fillStyle = textColor;
     ctx.textAlign = "center";
     ctx.textBaseline = "bottom";
@@ -146,7 +146,7 @@ export function LineChart({
     ctx.fillText(yLabel, 0, 0);
     ctx.restore();
 
-    // Markers verticales
+    // Vertical markers
     for (const m of markers) {
       const px = sx(m.x);
       ctx.strokeStyle = m.color ?? (isDark ? "#a78bfa" : "#7c3aed");

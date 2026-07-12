@@ -31,7 +31,7 @@ const UIContext = createContext<{
 } | null>(null);
 
 function initTheme(): State {
-  // El script inline del <head> ya aplicó la clase .dark según localStorage / SO.
+  // The inline script in <head> already applied the .dark class based on localStorage / OS.
   if (typeof document !== "undefined") {
     return {
       theme: document.documentElement.classList.contains("dark")
@@ -50,7 +50,7 @@ export function UIProvider({ children }: { children: React.ReactNode }) {
     try {
       localStorage.setItem("theme", state.theme);
     } catch {
-      // localStorage no disponible — ignorar
+      // localStorage not available — ignore
     }
   }, [state.theme]);
 
@@ -60,6 +60,6 @@ export function UIProvider({ children }: { children: React.ReactNode }) {
 
 export function useUI() {
   const ctx = useContext(UIContext);
-  if (!ctx) throw new Error("useUI debe usarse dentro de UIProvider");
+  if (!ctx) throw new Error("useUI must be used inside UIProvider");
   return ctx;
 }

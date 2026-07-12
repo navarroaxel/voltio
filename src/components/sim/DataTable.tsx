@@ -3,7 +3,7 @@ import { renderSub } from "@/components/ui/Sub";
 
 export interface Column {
   label: string;
-  sub?: string; // unidad o subtítulo
+  sub?: string; // unit or subtitle
 }
 
 interface DataTableProps {

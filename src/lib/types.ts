@@ -1,32 +1,32 @@
-/** Entrada del motor RLC serie. Unidades SI: L en henrios, C en faradios. */
+/** Input for the series RLC engine. SI units: L in henries, C in farads. */
 export interface RLCInput {
-  U: number; // tensión de la fuente (V)
-  R: number; // resistencia externa (Ω)
-  RL: number; // resistencia interna de la bobina (Ω)
-  L: number; // inductancia (H)
-  C: number; // capacidad (F)
-  f: number; // frecuencia (Hz)
+  U: number; // source voltage (V)
+  R: number; // external resistance (Ω)
+  RL: number; // coil's internal resistance (Ω)
+  L: number; // inductance (H)
+  C: number; // capacitance (F)
+  f: number; // frequency (Hz)
 }
 
-/** Resultado del cálculo de un circuito RLC serie a una frecuencia dada. */
+/** Result of computing a series RLC circuit at a given frequency. */
 export interface RLCResult {
-  omega: number; // pulsación ω = 2πf (rad/s)
-  XL: number; // reactancia inductiva (Ω)
-  XC: number; // reactancia capacitiva (Ω); Infinity si C = 0
-  R: number; // resistencia externa (Ω)
-  RL: number; // resistencia interna de la bobina (Ω)
+  omega: number; // angular frequency ω = 2πf (rad/s)
+  XL: number; // inductive reactance (Ω)
+  XC: number; // capacitive reactance (Ω); Infinity if C = 0
+  R: number; // external resistance (Ω)
+  RL: number; // coil's internal resistance (Ω)
   Rtot: number; // R + RL (Ω)
-  X: number; // reactancia neta XL − XC (Ω)
-  Z: number; // módulo de la impedancia (Ω)
-  phiDeg: number; // ángulo de fase φ (grados)
-  I: number; // corriente (A)
-  UR: number; // caída sobre la resistencia externa (V)
-  UL: number; // caída sobre la bobina física, incluye RL (V)
-  UC: number; // caída sobre el capacitor (V)
-  P: number; // potencia activa (W)
-  Qreact: number; // potencia reactiva (VAR)
-  S: number; // potencia aparente (VA)
-  fp: number; // factor de potencia (cos φ)
-  f0: number; // frecuencia de resonancia (Hz)
-  Qfactor: number; // factor de mérito Q
+  X: number; // net reactance XL − XC (Ω)
+  Z: number; // impedance magnitude (Ω)
+  phiDeg: number; // phase angle φ (degrees)
+  I: number; // current (A)
+  UR: number; // drop across the external resistance (V)
+  UL: number; // drop across the physical coil, includes RL (V)
+  UC: number; // drop across the capacitor (V)
+  P: number; // active power (W)
+  Qreact: number; // reactive power (VAR)
+  S: number; // apparent power (VA)
+  fp: number; // power factor (cos φ)
+  f0: number; // resonant frequency (Hz)
+  Qfactor: number; // quality factor Q
 }

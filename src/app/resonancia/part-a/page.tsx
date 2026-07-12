@@ -10,17 +10,17 @@ import { LineChart, type Series } from "@/components/charts/LineChart";
 import { PhasorDiagram } from "@/components/charts/PhasorDiagram";
 import { ImpedanceTriangle } from "@/components/charts/ImpedanceTriangle";
 import {
-  useParteA,
-  PARTE_A_FREQS,
-  PARTE_A_F0,
-  PARTE_A_F0_INDEX,
+  usePartA,
+  PART_A_FREQS,
+  PART_A_F0,
+  PART_A_F0_INDEX,
 } from "@/store/parte-a-store";
 import { calcRLC, resonantC, linspace } from "@/lib/rlc-engine";
 import {
-  PARTE_A,
-  PARTE_A_BASE,
-  PARTE_A_MEDIDO,
-  PARTE_A_C_PRIMERO,
+  PART_A,
+  PART_A_BASE,
+  PART_A_MEASURED,
+  PART_A_FIRST_C,
   UF,
 } from "@/lib/measured-data";
 import { fmt } from "@/lib/format";
@@ -36,11 +36,11 @@ const COL = {
   phi: "#ea580c",
 };
 
-const Cres = resonantC(PARTE_A.L, PARTE_A.f); // F
-const IMax = PARTE_A.U / (PARTE_A.R + PARTE_A.RL); // A, límite asintótico (C → ∞)
+const cResonance = resonantC(PART_A.L, PART_A.f); // F
+const iMax = PART_A.U / (PART_A.R + PART_A.RL); // A, asymptotic limit (C → ∞)
 
-export default function ParteAPage() {
-  const { state, dispatch } = useParteA();
+export default function PartAPage() {
+  const { state, dispatch } = usePartA();
   const { viewMode, cIndex, fIndex, chartTab } = state;
 
   return (
@@ -53,9 +53,9 @@ export default function ParteAPage() {
           RLC serie — se varía la capacidad C
         </h1>
         <p className="mt-2 text-sm text-neutral-600 dark:text-neutral-300">
-          Fuente Variac a {fmt(PARTE_A.U, 0)} V / {PARTE_A.f} Hz constante.
-          R&nbsp;=&nbsp;{PARTE_A.R}&nbsp;Ω, L&nbsp;=&nbsp;{fmt(PARTE_A.L, 2)}
-          &nbsp;H, R<sub>L</sub>&nbsp;=&nbsp;{fmt(PARTE_A.RL, 1)}&nbsp;Ω.
+          Fuente Variac a {fmt(PART_A.U, 0)} V / {PART_A.f} Hz constante.
+          R&nbsp;=&nbsp;{PART_A.R}&nbsp;Ω, L&nbsp;=&nbsp;{fmt(PART_A.L, 2)}
+          &nbsp;H, R<sub>L</sub>&nbsp;=&nbsp;{fmt(PART_A.RL, 1)}&nbsp;Ω.
         </p>
       </header>
 
@@ -65,26 +65,26 @@ export default function ParteAPage() {
 
       <div className="rounded-xl border border-amber-300 bg-amber-50 p-4 text-sm text-amber-900 dark:border-amber-800 dark:bg-amber-950/40 dark:text-amber-200">
         <strong>Condición de resonancia (punto 6a):</strong> para resonar a{" "}
-        {PARTE_A.f} Hz se necesita C = 1/(ω²·L) ={" "}
-        <strong>{fmt(Cres / UF, 1)} µF</strong>. La caja de capacitores llega
-        sólo a ~64 µF (8 escalones × 8 µF), muy por debajo de eso, así que{" "}
-        <strong>el circuito nunca alcanza la resonancia</strong> en este ensayo:
-        siempre es capacitivo (X<sub>C</sub> &gt; X<sub>L</sub>). Al no
+        {PART_A.f} Hz se necesita C = 1/(ω²·L) ={" "}
+        <strong>{fmt(cResonance / UF, 1)} µF</strong>. La caja de capacitores
+        llega sólo a ~64 µF (8 escalones × 8 µF), muy por debajo de eso, así
+        que <strong>el circuito nunca alcanza la resonancia</strong> en este
+        ensayo: siempre es capacitivo (X<sub>C</sub> &gt; X<sub>L</sub>). Al no
         resonar, la corriente sólo crece asintóticamente hacia{" "}
         <strong>
-          I<sub>max</sub> = U/(R + R<sub>L</sub>) ≈ {fmt(IMax, 3)} A
+          I<sub>max</sub> = U/(R + R<sub>L</sub>) ≈ {fmt(iMax, 3)} A
         </strong>{" "}
         y el factor de mérito a los 50 Hz de resonancia es muy bajo (Q ≈
         0,03), lo que da una curva chata y poco selectiva.
       </div>
 
-      {/* Selector de vista */}
+      {/* View selector */}
       <div className="inline-flex flex-wrap gap-1 rounded-lg bg-neutral-100 p-1 dark:bg-neutral-800">
         <button
           type="button"
-          onClick={() => dispatch({ type: "SET_VIEW", viewMode: "barridoC" })}
+          onClick={() => dispatch({ type: "SET_VIEW", viewMode: "sweepC" })}
           className={
-            viewMode === "barridoC"
+            viewMode === "sweepC"
               ? "rounded-md bg-white px-3 py-1.5 text-sm font-medium shadow-sm dark:bg-neutral-700"
               : "rounded-md px-3 py-1.5 text-sm font-medium text-neutral-500 dark:text-neutral-400"
           }
@@ -93,9 +93,9 @@ export default function ParteAPage() {
         </button>
         <button
           type="button"
-          onClick={() => dispatch({ type: "SET_VIEW", viewMode: "barridoF" })}
+          onClick={() => dispatch({ type: "SET_VIEW", viewMode: "sweepF" })}
           className={
-            viewMode === "barridoF"
+            viewMode === "sweepF"
               ? "rounded-md bg-white px-3 py-1.5 text-sm font-medium shadow-sm dark:bg-neutral-700"
               : "rounded-md px-3 py-1.5 text-sm font-medium text-neutral-500 dark:text-neutral-400"
           }
@@ -104,38 +104,38 @@ export default function ParteAPage() {
         </button>
       </div>
 
-      {viewMode === "barridoC" ? (
-        <BarridoC cIndex={cIndex} chartTab={chartTab} dispatch={dispatch} />
+      {viewMode === "sweepC" ? (
+        <SweepC cIndex={cIndex} chartTab={chartTab} dispatch={dispatch} />
       ) : (
-        <BarridoF fIndex={fIndex} chartTab={chartTab} dispatch={dispatch} />
+        <SweepF fIndex={fIndex} chartTab={chartTab} dispatch={dispatch} />
       )}
     </main>
   );
 }
 
 // ---------------------------------------------------------------------------
-//  Vista: barrido de C (ensayo principal medido)
+//  View: C sweep (main measured test)
 // ---------------------------------------------------------------------------
 
-function BarridoC({
+function SweepC({
   cIndex,
   chartTab,
   dispatch,
 }: {
   cIndex: number;
-  chartTab: "tensiones" | "iz" | "pq";
-  dispatch: ReturnType<typeof useParteA>["dispatch"];
+  chartTab: "voltages" | "iz" | "pq";
+  dispatch: ReturnType<typeof usePartA>["dispatch"];
 }) {
-  const row = PARTE_A_MEDIDO[cIndex];
-  const result = calcRLC({ ...PARTE_A_BASE, C: row.C * UF });
+  const row = PART_A_MEASURED[cIndex];
+  const result = calcRLC({ ...PART_A_BASE, C: row.C * UF });
 
-  // Curva teórica continua (8…66 µF, rango útil del ensayo).
+  // Continuous theoretical curve (8…66 µF, useful range of the test).
   const cSweep = linspace(8, 66, 60);
   const theory = cSweep.map((c) => ({
     c,
-    r: calcRLC({ ...PARTE_A_BASE, C: c * UF }),
+    r: calcRLC({ ...PART_A_BASE, C: c * UF }),
   }));
-  const medFinite = PARTE_A_MEDIDO.filter((m) => m.I > 0);
+  const measuredFinite = PART_A_MEASURED.filter((m) => m.I > 0);
 
   const metrics: Metric[] = [
     { label: "Z", value: fmt(result.Z, 1), unit: "Ω", accent: "violet" },
@@ -154,7 +154,7 @@ function BarridoC({
       <div className="space-y-5">
         <Card title="Punto de medición">
           <PointSelector
-            count={PARTE_A_MEDIDO.length}
+            count={PART_A_MEASURED.length}
             index={cIndex}
             onChange={(i) => dispatch({ type: "SET_C_INDEX", index: i })}
             label={`C = ${fmt(row.C, 0)} µF`}
@@ -177,9 +177,9 @@ function BarridoC({
           <p className="text-sm text-neutral-600 dark:text-neutral-300">
             La corriente medida crece con C pero nunca muestra un pico de
             resonancia: la capacidad disponible (~64 µF) queda muy por debajo
-            de los ~{fmt(Cres / UF, 0)} µF necesarios para resonar a 50 Hz.
-            Tiende asintóticamente a I<sub>max</sub> ≈ {fmt(IMax, 3)} A sin
-            llegar a alcanzarla. Además R = {PARTE_A.R} Ω domina ampliamente
+            de los ~{fmt(cResonance / UF, 0)} µF necesarios para resonar a 50
+            Hz. Tiende asintóticamente a I<sub>max</sub> ≈ {fmt(iMax, 3)} A sin
+            llegar a alcanzarla. Además R = {PART_A.R} Ω domina ampliamente
             sobre las reactancias (Q ≪ 1), por lo que la respuesta es apenas
             selectiva — consistente con lo que muestra la tabla medida.
           </p>
@@ -190,7 +190,7 @@ function BarridoC({
         <Card title="Gráficos en función de C">
           <ChartTabs
             tabs={[
-              { key: "tensiones", label: "U_R, U_L, U_C" },
+              { key: "voltages", label: "U_R, U_L, U_C" },
               { key: "iz", label: "I, Z" },
               { key: "pq", label: "P" },
             ]}
@@ -198,7 +198,7 @@ function BarridoC({
             onChange={(t) => dispatch({ type: "SET_TAB", tab: t })}
           />
           <div className="mt-4 space-y-6">
-            {chartTab === "tensiones" && (
+            {chartTab === "voltages" && (
               <LineChart
                 xLabel="C (µF)"
                 yLabel="Tensión (V)"
@@ -212,7 +212,7 @@ function BarridoC({
                   scatter(
                     "U_R",
                     COL.UR,
-                    medFinite.map((m) => ({ x: m.C, y: m.UR })),
+                    measuredFinite.map((m) => ({ x: m.C, y: m.UR })),
                   ),
                   line(
                     "U_C",
@@ -222,7 +222,7 @@ function BarridoC({
                   scatter(
                     "U_C",
                     COL.UC,
-                    medFinite.map((m) => ({ x: m.C, y: m.UC })),
+                    measuredFinite.map((m) => ({ x: m.C, y: m.UC })),
                   ),
                   line(
                     "U_L",
@@ -232,7 +232,7 @@ function BarridoC({
                   scatter(
                     "U_L",
                     COL.UL,
-                    medFinite.map((m) => ({ x: m.C, y: m.UL })),
+                    measuredFinite.map((m) => ({ x: m.C, y: m.UL })),
                   ),
                 ]}
               />
@@ -253,7 +253,7 @@ function BarridoC({
                     scatter(
                       "I",
                       COL.I,
-                      medFinite.map((m) => ({ x: m.C, y: m.I })),
+                      measuredFinite.map((m) => ({ x: m.C, y: m.I })),
                     ),
                   ]}
                 />
@@ -271,7 +271,10 @@ function BarridoC({
                     scatter(
                       "Z",
                       COL.Z,
-                      medFinite.map((m) => ({ x: m.C, y: PARTE_A.U / m.I })),
+                      measuredFinite.map((m) => ({
+                        x: m.C,
+                        y: PART_A.U / m.I,
+                      })),
                     ),
                   ]}
                 />
@@ -292,7 +295,7 @@ function BarridoC({
                   scatter(
                     "P",
                     COL.P,
-                    medFinite.map((m) => ({ x: m.C, y: m.P })),
+                    measuredFinite.map((m) => ({ x: m.C, y: m.P })),
                   ),
                 ]}
               />
@@ -312,14 +315,14 @@ function BarridoC({
               { label: "Z = U/I", sub: "Ω" },
             ]}
             highlightRow={cIndex}
-            rows={PARTE_A_MEDIDO.map((m) => [
+            rows={PART_A_MEASURED.map((m) => [
               fmt(m.C, 0),
               fmt(m.I, 3),
               fmt(m.UR, 1),
               fmt(m.UL, 2),
               fmt(m.UC, 1),
               fmt(m.P, 1),
-              m.I > 0 ? fmt(PARTE_A.U / m.I, 0) : "—",
+              m.I > 0 ? fmt(PART_A.U / m.I, 0) : "—",
             ])}
           />
         </Card>
@@ -329,42 +332,42 @@ function BarridoC({
 }
 
 // ---------------------------------------------------------------------------
-//  Vista: barrido de frecuencia (punto 6d, C = 63 µF)
+//  View: frequency sweep (point 6d, C = 63 µF)
 // ---------------------------------------------------------------------------
 
-function BarridoF({
+function SweepF({
   fIndex,
   chartTab,
   dispatch,
 }: {
   fIndex: number;
-  chartTab: "tensiones" | "iz" | "pq";
-  dispatch: ReturnType<typeof useParteA>["dispatch"];
+  chartTab: "voltages" | "iz" | "pq";
+  dispatch: ReturnType<typeof usePartA>["dispatch"];
 }) {
-  const C = PARTE_A_C_PRIMERO * UF;
-  const f = PARTE_A_FREQS[fIndex];
-  const result = calcRLC({ ...PARTE_A_BASE, C, f });
+  const C = PART_A_FIRST_C * UF;
+  const f = PART_A_FREQS[fIndex];
+  const result = calcRLC({ ...PART_A_BASE, C, f });
 
   const fSweep = linspace(
-    PARTE_A_FREQS[0],
-    PARTE_A_FREQS[PARTE_A_FREQS.length - 1],
+    PART_A_FREQS[0],
+    PART_A_FREQS[PART_A_FREQS.length - 1],
     80,
   );
   const theory = fSweep.map((ff) => ({
     f: ff,
-    r: calcRLC({ ...PARTE_A_BASE, C, f: ff }),
+    r: calcRLC({ ...PART_A_BASE, C, f: ff }),
   }));
-  const marker = { x: PARTE_A_F0, label: "f₀", color: "#7c3aed" };
+  const marker = { x: PART_A_F0, label: "f₀", color: "#7c3aed" };
   const qF0 = calcRLC({
-    ...PARTE_A_BASE,
-    C: PARTE_A_C_PRIMERO * UF,
-    f: PARTE_A_F0,
+    ...PART_A_BASE,
+    C: PART_A_FIRST_C * UF,
+    f: PART_A_F0,
   }).Qfactor;
 
-  const cond =
-    fIndex === PARTE_A_F0_INDEX
+  const condition =
+    fIndex === PART_A_F0_INDEX
       ? "f = f₀"
-      : fIndex < PARTE_A_F0_INDEX
+      : fIndex < PART_A_F0_INDEX
         ? "f < f₀"
         : "f > f₀";
 
@@ -384,21 +387,21 @@ function BarridoF({
     <div className="grid grid-cols-1 gap-5 lg:grid-cols-2">
       <div className="space-y-5">
         <div className="rounded-xl border border-blue-200 bg-blue-50 p-4 text-sm text-blue-900 dark:border-blue-900 dark:bg-blue-950/40 dark:text-blue-200">
-          Para el primer C de la tabla (C = {PARTE_A_C_PRIMERO} µF), la
+          Para el primer C de la tabla (C = {PART_A_FIRST_C} µF), la
           frecuencia de resonancia teórica es{" "}
-          <strong>f₀ = {fmt(PARTE_A_F0, 1)} Hz</strong> (punto 6c). El barrido
+          <strong>f₀ = {fmt(PART_A_F0, 1)} Hz</strong> (punto 6c). El barrido
           toma 5 frecuencias por debajo y 5 por encima. Aun en f₀ el factor de
           mérito sigue siendo ≪ 1 (Q ≈ {fmt(qF0, 3)}), por lo que el pico de
           resonancia teórico es apenas pronunciado.
         </div>
 
-        <Card title={`Punto de cálculo · ${cond}`}>
+        <Card title={`Punto de cálculo · ${condition}`}>
           <PointSelector
-            count={PARTE_A_FREQS.length}
+            count={PART_A_FREQS.length}
             index={fIndex}
             onChange={(i) => dispatch({ type: "SET_F_INDEX", index: i })}
             label={`f = ${fmt(f, 1)} Hz`}
-            hint={cond}
+            hint={condition}
           />
           <div className="mt-4">
             <MetricsGrid metrics={metrics} />
@@ -418,7 +421,7 @@ function BarridoF({
         <Card title="Gráficos en función de f">
           <ChartTabs
             tabs={[
-              { key: "tensiones", label: "U_R, U_L, U_C" },
+              { key: "voltages", label: "U_R, U_L, U_C" },
               { key: "iz", label: "I, Z" },
               { key: "pq", label: "P, Q, φ" },
             ]}
@@ -426,7 +429,7 @@ function BarridoF({
             onChange={(t) => dispatch({ type: "SET_TAB", tab: t })}
           />
           <div className="mt-4 space-y-6">
-            {chartTab === "tensiones" && (
+            {chartTab === "voltages" && (
               <LineChart
                 xLabel="f (Hz)"
                 yLabel="Tensión (V)"
@@ -534,8 +537,8 @@ function BarridoF({
               { label: "φ", sub: "°" },
             ]}
             highlightRow={fIndex}
-            rows={PARTE_A_FREQS.map((ff) => {
-              const r = calcRLC({ ...PARTE_A_BASE, C, f: ff });
+            rows={PART_A_FREQS.map((ff) => {
+              const r = calcRLC({ ...PART_A_BASE, C, f: ff });
               return [
                 fmt(ff, 1),
                 fmt(r.Z, 1),
@@ -555,7 +558,7 @@ function BarridoF({
   );
 }
 
-// Helpers de series
+// Series helpers
 function line(label: string, color: string, points: Series["points"]): Series {
   return { label, color, points, kind: "line" };
 }

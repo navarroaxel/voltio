@@ -11,8 +11,8 @@ interface ImpedanceTriangleProps {
 }
 
 /**
- * Triángulo de impedancia: cateto horizontal Rtot, cateto vertical X = XL−XC,
- * hipotenusa Z y ángulo φ. (Objetivo B del TP: diagramas de impedancia.)
+ * Impedance triangle: horizontal leg Rtot, vertical leg X = XL−XC,
+ * hypotenuse Z and angle φ. (Assignment objective B: impedance diagrams.)
  */
 export function ImpedanceTriangle({
   result,
@@ -58,13 +58,13 @@ export function ImpedanceTriangle({
     const spanY = Math.max(Math.abs(X), 1);
     const scale = Math.min((cssW - 2 * pad) / spanX, (cssH - 2 * pad) / spanY);
 
-    // Origen abajo-izquierda; X positivo (inductivo) hacia arriba.
+    // Origin at bottom-left; positive X (inductive) points upward.
     const ox = pad;
     const oy = cssH / 2;
     const px = (x: number) => ox + x * scale;
     const py = (y: number) => oy - y * scale;
 
-    // Catetos
+    // Legs
     ctx.lineWidth = 2;
     ctx.strokeStyle = "#2563eb"; // Rtot
     ctx.beginPath();
@@ -72,13 +72,13 @@ export function ImpedanceTriangle({
     ctx.lineTo(px(Rtot), py(0));
     ctx.stroke();
 
-    ctx.strokeStyle = X >= 0 ? "#dc2626" : "#16a34a"; // X (ind/cap)
+    ctx.strokeStyle = X >= 0 ? "#dc2626" : "#16a34a"; // X (inductive/capacitive)
     ctx.beginPath();
     ctx.moveTo(px(Rtot), py(0));
     ctx.lineTo(px(Rtot), py(X));
     ctx.stroke();
 
-    // Hipotenusa Z
+    // Hypotenuse Z
     ctx.strokeStyle = fg;
     ctx.lineWidth = 2.5;
     ctx.beginPath();
@@ -86,7 +86,7 @@ export function ImpedanceTriangle({
     ctx.lineTo(px(Rtot), py(X));
     ctx.stroke();
 
-    // Etiquetas en esquinas fijas (legibles sea cual sea la forma del triángulo)
+    // Labels in fixed corners (readable regardless of the triangle's shape)
     ctx.textBaseline = "top";
     ctx.textAlign = "left";
     ctx.fillStyle = fg;

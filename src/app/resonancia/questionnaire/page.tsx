@@ -1,17 +1,17 @@
 import { Card } from "@/components/ui/Card";
 import { calcRLC, resonantF } from "@/lib/rlc-engine";
 import {
-  PARTE_B,
-  PARTE_B_BASE,
-  PARTE_B_RESONANCIA,
+  PART_B,
+  PART_B_BASE,
+  PART_B_RESONANCE,
   UF,
 } from "@/lib/measured-data";
 import { fmt } from "@/lib/format";
 
-const f0 = resonantF(PARTE_B.L, PARTE_B.C * UF);
-const res = calcRLC({ ...PARTE_B_BASE, f: f0 }); // en resonancia
-const r50 = calcRLC({ ...PARTE_B_BASE, f: 50 }); // a 50 Hz
-const rz = PARTE_B_RESONANCIA; // resonancia medida (Parte B)
+const f0 = resonantF(PART_B.L, PART_B.C * UF);
+const res = calcRLC({ ...PART_B_BASE, f: f0 }); // at resonance
+const r50 = calcRLC({ ...PART_B_BASE, f: 50 }); // at 50 Hz
+const rz = PART_B_RESONANCE; // measured resonance (Part B)
 
 function QA({
   letter,
@@ -152,7 +152,7 @@ export default function CuestionarioPage() {
           <strong>corriente es máxima</strong>: la tensión sobre la
           resistencia externa alcanza su valor más alto (
           <Num>U_RS = {fmt(rz.URS, 3)} V</Num>), lo que implica{" "}
-          <Num>I = {fmt((rz.URS / PARTE_B.R) * 1000, 1)} mA</Num> máxima. Fuera
+          <Num>I = {fmt((rz.URS / PART_B.R) * 1000, 1)} mA</Num> máxima. Fuera
           de f₀ la corriente cae a ambos lados, dibujando el pico en la tabla
           medida.
         </p>

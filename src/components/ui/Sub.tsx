@@ -1,9 +1,9 @@
 import React from "react";
 
 /**
- * Renderiza un símbolo con notación de guion bajo como subíndice real:
- * "U_R" → U<sub>R</sub>, "U_RS" → U<sub>RS</sub>. Los tramos sin "_" se
- * devuelven tal cual. Uso: {renderSub(label)}.
+ * Renders a symbol with underscore notation as a real subscript:
+ * "U_R" → U<sub>R</sub>, "U_RS" → U<sub>RS</sub>. Segments without "_" are
+ * returned as-is. Usage: {renderSub(label)}.
  */
 export function renderSub(label: string): React.ReactNode {
   const parts = label.split(/_([A-Za-z0-9]+)/); // [base, sub, base, sub, …]

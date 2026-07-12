@@ -10,9 +10,9 @@ Plataforma de Trabajos Prácticos de **Electrotécnica I (UTN FRBA)**. App [Next
 | -------------------------- | ---------------------------------------- | ------ |
 | `/`                        | Índice de TPs                            | —      |
 | `/resonancia`              | TP1 Resonancia — teoría + objetivos      | activo |
-| `/resonancia/parte-a`      | Parte A: RLC serie, se varía C (50 Hz)   | activo |
-| `/resonancia/parte-b`      | Parte B: RLC serie, se varía la f (GAF)  | activo |
-| `/resonancia/cuestionario` | Cuestionario (5 preguntas con análisis)  | activo |
+| `/resonancia/part-a`        | Parte A: RLC serie, se varía C (50 Hz)   | activo |
+| `/resonancia/part-b`        | Parte B: RLC serie, se varía la f (GAF)  | activo |
+| `/resonancia/questionnaire` | Cuestionario (5 preguntas con análisis)  | activo |
 
 Próximos TPs (trifásica, poliarmónicas, acoplados) se agregan como rutas nuevas (`/trifasica/...`, etc.).
 
@@ -33,9 +33,9 @@ src/
     page.tsx                # índice de TPs (array TPS)
     resonancia/             # TP1
       page.tsx              # teoría + objetivos
-      parte-a/              # barrido de C (medido) y de f (punto 6d)
-      parte-b/              # barrido de frecuencia
-      cuestionario/         # preguntas + análisis
+      part-a/               # barrido de C (medido) y de f (punto 6d)
+      part-b/               # barrido de frecuencia
+      questionnaire/        # preguntas + análisis
   components/
     charts/                 # LineChart, PhasorDiagram, ImpedanceTriangle (canvas)
     sim/                    # CircuitSchematic, DataTable, MetricsGrid, etc.

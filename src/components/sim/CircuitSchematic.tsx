@@ -1,10 +1,10 @@
 "use client";
 
 /**
- * Esquema del circuito RLC serie en SVG. Dos variantes:
- *  - "parteA": Variac (50 V/50 Hz) + watímetro (W) + amperímetro (A) + V1 + V2.
- *  - "parteB": GAF + voltímetros V, VR, VL, VC sobre cada elemento.
- * Usa currentColor para adaptarse a modo claro/oscuro.
+ * Series RLC circuit schematic in SVG. Two variants:
+ *  - "parteA": Variac (50 V/50 Hz) + wattmeter (W) + ammeter (A) + V1 + V2.
+ *  - "parteB": GAF + voltmeters V, VR, VL, VC across each element.
+ * Uses currentColor to adapt to light/dark mode.
  */
 
 type Variant = "parteA" | "parteB";
@@ -74,7 +74,7 @@ export function CircuitSchematic({ variant }: { variant: Variant }) {
   const red = "#dc2626";
   const green = "#16a34a";
 
-  // Posiciones de los elementos en serie (top wire).
+  // Positions of the series elements (top wire).
   const rX = 250;
   const rW = 70;
   const lX = 360;
@@ -92,7 +92,7 @@ export function CircuitSchematic({ variant }: { variant: Variant }) {
           : "Circuito RLC serie de la Parte B alimentado por generador de funciones"
       }
     >
-      {/* Wires del lazo */}
+      {/* Loop wires */}
       <path
         d={`M 70 ${TOP} H ${rX}`}
         stroke={wire}
@@ -118,10 +118,10 @@ export function CircuitSchematic({ variant }: { variant: Variant }) {
         fill="none"
       />
 
-      {/* Fuente a la izquierda */}
+      {/* Source on the left */}
       {variant === "parteA" ? (
         <>
-          {/* Variac: bobina vertical */}
+          {/* Variac: vertical coil */}
           <path
             d={`M 70 ${TOP} V 95`}
             stroke={wire}
@@ -149,7 +149,7 @@ export function CircuitSchematic({ variant }: { variant: Variant }) {
         </>
       ) : (
         <>
-          {/* GAF: caja */}
+          {/* GAF: box */}
           <rect
             x={20}
             y={95}
@@ -194,7 +194,7 @@ export function CircuitSchematic({ variant }: { variant: Variant }) {
         </>
       )}
 
-      {/* Voltímetro de fuente */}
+      {/* Source voltmeter */}
       <path
         d={`M 120 ${TOP} V 120`}
         stroke={wire}
@@ -209,7 +209,7 @@ export function CircuitSchematic({ variant }: { variant: Variant }) {
       />
       <Meter cx={120} cy={134} label={variant === "parteA" ? "V1" : "V"} />
 
-      {/* Medidores en serie (solo Parte A) */}
+      {/* Series meters (Part A only) */}
       {variant === "parteA" && (
         <>
           <Meter cx={165} cy={TOP} label="W" />
@@ -274,7 +274,7 @@ export function CircuitSchematic({ variant }: { variant: Variant }) {
         C
       </text>
 
-      {/* Voltímetros sobre los elementos */}
+      {/* Voltmeters across the elements */}
       {variant === "parteB" ? (
         <>
           <ElementVoltmeter x={rX + rW / 2} label="VR" color={blue} />
@@ -283,7 +283,7 @@ export function CircuitSchematic({ variant }: { variant: Variant }) {
         </>
       ) : (
         <>
-          {/* V2: téster sobre el tramo L–C */}
+          {/* V2: tester across the L–C segment */}
           <path
             d={`M ${lX} ${TOP} V 34`}
             stroke={wire}

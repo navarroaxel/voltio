@@ -9,14 +9,14 @@ import { ChartTabs } from "@/components/sim/ChartTabs";
 import { LineChart, type Series } from "@/components/charts/LineChart";
 import { PhasorDiagram } from "@/components/charts/PhasorDiagram";
 import { ImpedanceTriangle } from "@/components/charts/ImpedanceTriangle";
-import { useParteB, PARTE_B_F0 } from "@/store/parte-b-store";
+import { usePartB, PART_B_F0 } from "@/store/parte-b-store";
 import { calcRLC, linspace } from "@/lib/rlc-engine";
 import {
-  PARTE_B,
-  PARTE_B_BASE,
-  PARTE_B_ESTIMADO,
-  PARTE_B_MEDIDO,
-  PARTE_B_RESONANCIA,
+  PART_B,
+  PART_B_BASE,
+  PART_B_ESTIMATED,
+  PART_B_MEASURED,
+  PART_B_RESONANCE,
 } from "@/lib/measured-data";
 import { fmt } from "@/lib/format";
 
@@ -31,33 +31,33 @@ const COL = {
   phi: "#ea580c",
 };
 
-export default function ParteBPage() {
-  const { state, dispatch } = useParteB();
+export default function PartBPage() {
+  const { state, dispatch } = usePartB();
   const { fIndex, chartTab } = state;
 
-  const rz = PARTE_B_RESONANCIA;
-  const row = PARTE_B_MEDIDO[fIndex];
-  const result = calcRLC({ ...PARTE_B_BASE, f: row.f });
+  const rz = PART_B_RESONANCE;
+  const row = PART_B_MEASURED[fIndex];
+  const result = calcRLC({ ...PART_B_BASE, f: row.f });
 
-  const fMin = PARTE_B_MEDIDO[0].f;
-  const fMax = PARTE_B_MEDIDO[PARTE_B_MEDIDO.length - 1].f;
+  const fMin = PART_B_MEASURED[0].f;
+  const fMax = PART_B_MEASURED[PART_B_MEASURED.length - 1].f;
   const fSweep = linspace(fMin, fMax, 120);
   const theory = fSweep.map((ff) => ({
     f: ff,
-    r: calcRLC({ ...PARTE_B_BASE, f: ff }),
+    r: calcRLC({ ...PART_B_BASE, f: ff }),
   }));
-  const marker = { x: PARTE_B_F0, label: "f₀", color: "#7c3aed" };
+  const marker = { x: PART_B_F0, label: "f₀", color: "#7c3aed" };
 
-  // Medidos: I = U_R/R, Z = U/I.
-  const med = PARTE_B_MEDIDO.map((m) => {
-    const I = m.URS / PARTE_B.R;
+  // Measured values: I = U_R/R, Z = U/I.
+  const measured = PART_B_MEASURED.map((m) => {
+    const I = m.URS / PART_B.R;
     return { ...m, I, Z: I > 0 ? m.U / I : NaN };
   });
 
-  const cond =
-    Math.abs(row.f - PARTE_B_F0) < 6
+  const condition =
+    Math.abs(row.f - PART_B_F0) < 6
       ? "f ≈ f₀"
-      : row.f < PARTE_B_F0
+      : row.f < PART_B_F0
         ? "f < f₀"
         : "f > f₀";
 
@@ -83,8 +83,8 @@ export default function ParteBPage() {
           RLC serie — se varía la frecuencia f
         </h1>
         <p className="mt-2 text-sm text-neutral-600 dark:text-neutral-300">
-          Fuente GAF a tensión senoidal constante (≈{fmt(PARTE_B.U, 0)} V).
-          Resonancia teórica en <strong>f₀ ≈ {fmt(PARTE_B_F0, 0)} Hz</strong>.
+          Fuente GAF a tensión senoidal constante (≈{fmt(PART_B.U, 0)} V).
+          Resonancia teórica en <strong>f₀ ≈ {fmt(PART_B_F0, 0)} Hz</strong>.
         </p>
       </header>
 
@@ -92,12 +92,12 @@ export default function ParteBPage() {
         <CircuitSchematic variant="parteB" />
       </Card>
 
-      {PARTE_B_ESTIMADO && (
+      {PART_B_ESTIMATED && (
         <div className="rounded-xl border border-amber-300 bg-amber-50 p-4 text-sm text-amber-900 dark:border-amber-800 dark:bg-amber-950/40 dark:text-amber-200">
-          <strong>Nota:</strong> el enunciado no fija los valores de R, L y C de
-          este ensayo. Los usados aquí (R&nbsp;=&nbsp;{PARTE_B.R}&nbsp;Ω,
-          L&nbsp;=&nbsp;{fmt(PARTE_B.L, 2)}&nbsp;H, C&nbsp;=&nbsp;
-          {fmt(PARTE_B.C, 1)}&nbsp;µF, R<sub>L</sub>&nbsp;=&nbsp;{PARTE_B.RL}
+          <strong>Nota:</strong> el enunciado no fija los valores de R, L y C
+          de este ensayo. Los usados aquí (R&nbsp;=&nbsp;{PART_B.R}&nbsp;Ω,
+          L&nbsp;=&nbsp;{fmt(PART_B.L, 2)}&nbsp;H, C&nbsp;=&nbsp;
+          {fmt(PART_B.C, 1)}&nbsp;µF, R<sub>L</sub>&nbsp;=&nbsp;{PART_B.RL}
           &nbsp;Ω)
           son <strong>estimados</strong> a partir de la curva medida
           (reproducen f₀ y Q). Reemplazar por los valores reales registrados
@@ -109,9 +109,9 @@ export default function ParteBPage() {
 
       <div className="grid grid-cols-1 gap-5 lg:grid-cols-2">
         <div className="space-y-5">
-          <Card title={`Punto de medición · ${cond}`}>
+          <Card title={`Punto de medición · ${condition}`}>
             <PointSelector
-              count={PARTE_B_MEDIDO.length}
+              count={PART_B_MEASURED.length}
               index={fIndex}
               onChange={(i) => dispatch({ type: "SET_F_INDEX", index: i })}
               label={`f = ${fmt(row.f, 0)} Hz`}
@@ -135,7 +135,7 @@ export default function ParteBPage() {
           <Card title="Gráficos en función de f">
             <ChartTabs
               tabs={[
-                { key: "tensiones", label: "U_R, U_L, U_C" },
+                { key: "voltages", label: "U_R, U_L, U_C" },
                 { key: "iz", label: "I, Z" },
                 { key: "pq", label: "P, Q, φ" },
               ]}
@@ -143,7 +143,7 @@ export default function ParteBPage() {
               onChange={(t) => dispatch({ type: "SET_TAB", tab: t })}
             />
             <div className="mt-4 space-y-6">
-              {chartTab === "tensiones" && (
+              {chartTab === "voltages" && (
                 <LineChart
                   xLabel="f (Hz)"
                   yLabel="Tensión (V)"
@@ -157,7 +157,7 @@ export default function ParteBPage() {
                     scatter(
                       "U_R",
                       COL.UR,
-                      med.map((m) => ({ x: m.f, y: m.URS })),
+                      measured.map((m) => ({ x: m.f, y: m.URS })),
                     ),
                     line(
                       "U_C",
@@ -167,7 +167,7 @@ export default function ParteBPage() {
                     scatter(
                       "U_C",
                       COL.UC,
-                      med.map((m) => ({ x: m.f, y: m.UC })),
+                      measured.map((m) => ({ x: m.f, y: m.UC })),
                     ),
                     line(
                       "U_L",
@@ -177,7 +177,7 @@ export default function ParteBPage() {
                     scatter(
                       "U_L",
                       COL.UL,
-                      med.map((m) => ({ x: m.f, y: m.UL })),
+                      measured.map((m) => ({ x: m.f, y: m.UL })),
                     ),
                   ]}
                 />
@@ -198,7 +198,7 @@ export default function ParteBPage() {
                       scatter(
                         "I",
                         COL.I,
-                        med.map((m) => ({ x: m.f, y: m.I * 1000 })),
+                        measured.map((m) => ({ x: m.f, y: m.I * 1000 })),
                       ),
                     ]}
                   />
@@ -216,7 +216,7 @@ export default function ParteBPage() {
                       scatter(
                         "Z",
                         COL.Z,
-                        med.map((m) => ({ x: m.f, y: m.Z })),
+                        measured.map((m) => ({ x: m.f, y: m.Z })),
                       ),
                     ]}
                   />
@@ -275,7 +275,7 @@ export default function ParteBPage() {
                 { label: "Z", sub: "Ω" },
               ]}
               highlightRow={fIndex}
-              rows={med.map((m) => [
+              rows={measured.map((m) => [
                 m.n,
                 fmt(m.f, 0),
                 fmt(m.U, 2),

@@ -4,8 +4,8 @@ interface PointSelectorProps {
   count: number;
   index: number;
   onChange: (index: number) => void;
-  label: string; // texto del punto actual
-  hint?: string; // descripción auxiliar
+  label: string; // text for the current point
+  hint?: string; // auxiliary description
 }
 
 export function PointSelector({
