@@ -1,0 +1,336 @@
+"use client";
+
+import { Card } from "@/components/ui/Card";
+import { CircuitSchematic } from "@/components/sim/CircuitSchematic";
+import { MetricsGrid, type Metric } from "@/components/sim/MetricsGrid";
+import { DataTable } from "@/components/sim/DataTable";
+import { PointSelector } from "@/components/sim/PointSelector";
+import { ChartTabs } from "@/components/sim/ChartTabs";
+import { LineChart, type Series } from "@/components/charts/LineChart";
+import { PhasorDiagram } from "@/components/charts/PhasorDiagram";
+import { ImpedanceTriangle } from "@/components/charts/ImpedanceTriangle";
+import { usePartB, PART_B_F0 } from "@/store/parte-b-store";
+import { calcRLC, linspace } from "@/lib/rlc-engine";
+import {
+  PART_B,
+  PART_B_BASE,
+  PART_B_ESTIMATED,
+  PART_B_MEASURED,
+  PART_B_RESONANCE,
+} from "@/lib/measured-data";
+import { fmt } from "@/lib/format";
+import { useLanguage } from "@/i18n/LanguageContext";
+
+const COL = {
+  UR: "#2563eb",
+  UL: "#dc2626",
+  UC: "#16a34a",
+  I: "#d97706",
+  Z: "#7c3aed",
+  P: "#0891b2",
+  Q: "#db2777",
+  phi: "#ea580c",
+};
+
+export default function PartBPage() {
+  const { t } = useLanguage();
+  const { state, dispatch } = usePartB();
+  const { fIndex, chartTab } = state;
+
+  const rz = PART_B_RESONANCE;
+  const row = PART_B_MEASURED[fIndex];
+  const result = calcRLC({ ...PART_B_BASE, f: row.f });
+
+  const fMin = PART_B_MEASURED[0].f;
+  const fMax = PART_B_MEASURED[PART_B_MEASURED.length - 1].f;
+  const fSweep = linspace(fMin, fMax, 120);
+  const theory = fSweep.map((ff) => ({
+    f: ff,
+    r: calcRLC({ ...PART_B_BASE, f: ff }),
+  }));
+  const marker = { x: PART_B_F0, label: "f₀", color: "#7c3aed" };
+
+  // Measured values: I = U_R/R, Z = U/I.
+  const measured = PART_B_MEASURED.map((m) => {
+    const I = m.URS / PART_B.R;
+    return { ...m, I, Z: I > 0 ? m.U / I : NaN };
+  });
+
+  const condition =
+    Math.abs(row.f - PART_B_F0) < 6
+      ? "f ≈ f₀"
+      : row.f < PART_B_F0
+        ? "f < f₀"
+        : "f > f₀";
+
+  const metrics: Metric[] = [
+    { label: "f", value: fmt(row.f, 0), unit: "Hz", accent: "amber" },
+    { label: "Z", value: fmt(result.Z, 0), unit: "Ω", accent: "violet" },
+    { label: "I", value: fmt(result.I * 1000, 2), unit: "mA", accent: "amber" },
+    { label: "φ", value: fmt(result.phiDeg, 1), unit: "°" },
+    { label: "U_R", value: fmt(result.UR, 2), unit: "V", accent: "blue" },
+    { label: "U_L", value: fmt(result.UL, 1), unit: "V", accent: "red" },
+    { label: "U_C", value: fmt(result.UC, 1), unit: "V", accent: "green" },
+    { label: "cos φ", value: fmt(result.fp, 3) },
+    { label: t("partb.metric.q"), value: fmt(result.Qfactor, 1) },
+  ];
+
+  return (
+    <main className="mx-auto max-w-6xl space-y-5 px-4 py-8 sm:px-6">
+      <header>
+        <p className="text-xs font-semibold tracking-wide text-blue-600 uppercase">
+          {t("partb.kicker")}
+        </p>
+        <h1 className="mt-1 text-2xl font-bold tracking-tight">
+          {t("partb.title")}
+        </h1>
+        <p className="mt-2 text-sm text-neutral-600 dark:text-neutral-300">
+          {t("partb.subtitle.source")} (≈{fmt(PART_B.U, 0)} V).{" "}
+          {t("partb.subtitle.resonance")}{" "}
+          <strong>f₀ ≈ {fmt(PART_B_F0, 0)} Hz</strong>.
+        </p>
+      </header>
+
+      <Card>
+        <CircuitSchematic variant="parteB" />
+      </Card>
+
+      {PART_B_ESTIMATED && (
+        <div className="rounded-xl border border-amber-300 bg-amber-50 p-4 text-sm text-amber-900 dark:border-amber-800 dark:bg-amber-950/40 dark:text-amber-200">
+          <strong>{t("partb.note.label")}</strong> {t("partb.note.text1")}
+          R&nbsp;=&nbsp;{PART_B.R}&nbsp;Ω, L&nbsp;=&nbsp;{fmt(PART_B.L, 2)}
+          &nbsp;H, C&nbsp;=&nbsp;
+          {fmt(PART_B.C, 1)}&nbsp;µF, R<sub>L</sub>&nbsp;=&nbsp;{PART_B.RL}
+          &nbsp;Ω{t("partb.note.text2")} <strong>{t("partb.note.estimated")}</strong>{" "}
+          {t("partb.note.text3")}
+        </div>
+      )}
+
+      <div className="grid grid-cols-1 gap-5 lg:grid-cols-2">
+        <div className="space-y-5">
+          <Card title={`${t("partb.card.point")} · ${condition}`}>
+            <PointSelector
+              count={PART_B_MEASURED.length}
+              index={fIndex}
+              onChange={(i) => dispatch({ type: "SET_F_INDEX", index: i })}
+              label={`f = ${fmt(row.f, 0)} Hz`}
+              hint={`${t("partb.hint.measurement")}${row.n}`}
+            />
+            <div className="mt-4">
+              <MetricsGrid metrics={metrics} />
+            </div>
+          </Card>
+
+          <Card title={t("partb.card.phasor")}>
+            <PhasorDiagram result={result} />
+          </Card>
+
+          <Card title={t("partb.card.impedance")}>
+            <ImpedanceTriangle result={result} />
+          </Card>
+        </div>
+
+        <div className="space-y-5">
+          <Card title={t("partb.card.charts")}>
+            <ChartTabs
+              tabs={[
+                { key: "voltages", label: "U_R, U_L, U_C" },
+                { key: "iz", label: "I, Z" },
+                { key: "pq", label: "P, Q, φ" },
+              ]}
+              active={chartTab}
+              onChange={(t) => dispatch({ type: "SET_TAB", tab: t })}
+            />
+            <div className="mt-4 space-y-6">
+              {chartTab === "voltages" && (
+                <LineChart
+                  xLabel="f (Hz)"
+                  yLabel={t("partb.chart.voltage_label")}
+                  markers={[marker]}
+                  series={[
+                    line(
+                      "U_R",
+                      COL.UR,
+                      theory.map((t) => ({ x: t.f, y: t.r.UR })),
+                    ),
+                    scatter(
+                      "U_R",
+                      COL.UR,
+                      measured.map((m) => ({ x: m.f, y: m.URS })),
+                    ),
+                    line(
+                      "U_C",
+                      COL.UC,
+                      theory.map((t) => ({ x: t.f, y: t.r.UC })),
+                    ),
+                    scatter(
+                      "U_C",
+                      COL.UC,
+                      measured.map((m) => ({ x: m.f, y: m.UC })),
+                    ),
+                    line(
+                      "U_L",
+                      COL.UL,
+                      theory.map((t) => ({ x: t.f, y: t.r.UL })),
+                    ),
+                    scatter(
+                      "U_L",
+                      COL.UL,
+                      measured.map((m) => ({ x: m.f, y: m.UL })),
+                    ),
+                  ]}
+                />
+              )}
+              {chartTab === "iz" && (
+                <>
+                  <LineChart
+                    xLabel="f (Hz)"
+                    yLabel="I (mA)"
+                    yDecimals={1}
+                    markers={[marker]}
+                    series={[
+                      line(
+                        "I",
+                        COL.I,
+                        theory.map((t) => ({ x: t.f, y: t.r.I * 1000 })),
+                      ),
+                      scatter(
+                        "I",
+                        COL.I,
+                        measured.map((m) => ({ x: m.f, y: m.I * 1000 })),
+                      ),
+                    ]}
+                  />
+                  <LineChart
+                    xLabel="f (Hz)"
+                    yLabel="Z (Ω)"
+                    yDecimals={0}
+                    markers={[marker]}
+                    series={[
+                      line(
+                        "Z",
+                        COL.Z,
+                        theory.map((t) => ({ x: t.f, y: t.r.Z })),
+                      ),
+                      scatter(
+                        "Z",
+                        COL.Z,
+                        measured.map((m) => ({ x: m.f, y: m.Z })),
+                      ),
+                    ]}
+                  />
+                </>
+              )}
+              {chartTab === "pq" && (
+                <>
+                  <LineChart
+                    xLabel="f (Hz)"
+                    yLabel="P (mW) · Q (mVAR)"
+                    yFromZero={false}
+                    yDecimals={0}
+                    markers={[marker]}
+                    series={[
+                      line(
+                        "P",
+                        COL.P,
+                        theory.map((t) => ({ x: t.f, y: t.r.P * 1000 })),
+                      ),
+                      line(
+                        "Q",
+                        COL.Q,
+                        theory.map((t) => ({ x: t.f, y: t.r.Qreact * 1000 })),
+                      ),
+                    ]}
+                  />
+                  <LineChart
+                    xLabel="f (Hz)"
+                    yLabel="φ (°)"
+                    yFromZero={false}
+                    yDecimals={0}
+                    markers={[marker]}
+                    series={[
+                      line(
+                        "φ",
+                        COL.phi,
+                        theory.map((t) => ({ x: t.f, y: t.r.phiDeg })),
+                      ),
+                    ]}
+                  />
+                </>
+              )}
+            </div>
+          </Card>
+
+          <Card title={t("partb.card.table")}>
+            <DataTable
+              columns={[
+                { label: t("partb.col.no") },
+                { label: "f", sub: "Hz" },
+                { label: "U", sub: "V" },
+                { label: "U_R", sub: "V" },
+                { label: "U_L", sub: "V" },
+                { label: "U_C", sub: "V" },
+                { label: "I", sub: "mA" },
+                { label: "Z", sub: "Ω" },
+              ]}
+              highlightRow={fIndex}
+              rows={measured.map((m) => [
+                m.n,
+                fmt(m.f, 0),
+                fmt(m.U, 2),
+                fmt(m.URS, 3),
+                fmt(m.UL, 2),
+                fmt(m.UC, 2),
+                fmt(m.I * 1000, 2),
+                fmt(m.Z, 0),
+              ])}
+            />
+          </Card>
+
+          <Card title={t("partb.card.conclusions")}>
+            <p className="text-sm text-neutral-600 dark:text-neutral-300">
+              {t("partb.concl1.prefix")}
+              {rz.n} ≈ {fmt(rz.f, 0)} Hz: U_RS {t("partb.concl1.max")} (
+              {fmt(rz.URS, 3)} V) {t("partb.concl1.and")} U<sub>L</sub> ≈ U
+              <sub>C</sub> ({fmt(rz.UL, 2)} / {fmt(rz.UC, 2)} V).
+            </p>
+            <p className="mt-2 text-sm text-neutral-600 dark:text-neutral-300">
+              <strong>{t("partb.concl2.label")}</strong> U<sub>L</sub>{" "}
+              {t("partb.concl1.and")} U<sub>C</sub> (~
+              {fmt(rz.UL, 0)} V) {t("partb.concl2.above")}
+              {fmt(rz.U, 1)} V) → {t("partb.concl2.qlabel")} Q ≈{" "}
+              {fmt(rz.UL / rz.U, 1)} (= U
+              <sub>L</sub>/U).
+            </p>
+            <p className="mt-2 text-sm text-neutral-600 dark:text-neutral-300">
+              <strong>{t("partb.concl3.label")}</strong>{" "}
+              {t("partb.concl3.wrtSource")} U
+              <sub>L</sub>/U ≈ {fmt(rz.UL / rz.U, 1)};{" "}
+              {t("partb.concl3.wrtR")} U<sub>C</sub>/U_RS ≈{" "}
+              {fmt(rz.UC / rz.URS, 1)}. {t("partb.concl3.reveals")} R
+              <sub>L</sub> ({t("partb.concl3.excess")} U − U_RS ≈{" "}
+              {fmt(rz.U - rz.URS, 2)} V {t("partb.concl3.fallsOn")} R
+              <sub>L</sub>).
+            </p>
+            <p className="mt-2 text-sm text-neutral-600 dark:text-neutral-300">
+              <strong>{t("partb.concl4.label")}</strong>{" "}
+              {t("partb.concl4.text1")} {fmt(rz.U, 2)} V{" "}
+              {t("partb.concl4.text2")}
+            </p>
+          </Card>
+        </div>
+      </div>
+    </main>
+  );
+}
+
+function line(label: string, color: string, points: Series["points"]): Series {
+  return { label, color, points, kind: "line" };
+}
+function scatter(
+  label: string,
+  color: string,
+  points: Series["points"],
+): Series {
+  return { label, color, points, kind: "scatter" };
+}

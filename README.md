@@ -1,36 +1,64 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Voltio
 
-## Getting Started
+Coursework platform for **Electrotécnica I (UTN FRBA)**. A fully client-side [Next.js 16](https://nextjs.org) (App Router) app, in **Spanish**, with simulators and analysis of the lab experiments.
 
-First, run the development server:
+> Versión en español: [`README.es.md`](./README.es.md)
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+## Assignments (TPs)
+
+| Route                      | Assignment                                    | Status |
+| -------------------------- | --------------------------------------------- | ------ |
+| `/`                        | TP index                                      | —      |
+| `/resonancia`              | TP1 Resonance — theory + objectives           | active |
+| `/resonancia/part-a`        | Part A: series RLC, sweeping C (50 Hz)        | active |
+| `/resonancia/part-b`        | Part B: series RLC, sweeping frequency (GAF)  | active |
+| `/resonancia/questionnaire` | Questionnaire (5 questions with analysis)     | active |
+
+Upcoming assignments (three-phase, polyharmonic, coupled circuits) are added as new routes (`/trifasica/...`, etc.).
+
+## Stack
+
+- **Next.js 16** (App Router, Turbopack) — no server data fetching, no middleware.
+- **React** with Context + `useReducer` per simulator (`src/store/`).
+- **Tailwind CSS v4** — class-based dark mode.
+- **Plain Canvas 2D** for the charts (theoretical lines + measured points, phasors, impedance triangle); no charting library.
+- **TypeScript**; the calculation engine (`src/lib/rlc-engine.ts`) is pure TS, no React.
+- **Vitest** to test the engine against the lab data.
+
+## Structure
+
+```
+src/
+  app/                      # routes (App Router)
+    page.tsx                # TP index (TPS array)
+    resonancia/             # TP1
+      page.tsx              # theory + objectives
+      part-a/               # C sweep (measured) and f sweep (point 6d)
+      part-b/               # frequency sweep
+      questionnaire/        # questions + analysis
+  components/
+    charts/                 # LineChart, PhasorDiagram, ImpedanceTriangle (canvas)
+    sim/                    # CircuitSchematic, DataTable, MetricsGrid, etc.
+    ui/                     # Nav, Header, Footer, Card, ThemeToggle
+  lib/
+    rlc-engine.ts           # series RLC math (pure TS)
+    measured-data.ts        # experiment tables and constants
+    format.ts               # fmt() — decimal comma, '—' for non-finite values
+    __tests__/              # engine tests
+  store/                    # Context + useReducer per simulator + theme
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+The lab data (`src/lib/measured-data.ts`) comes from the `lab-resonancia.pdf` report. The Part A and Part B measured tables are transcribed verbatim; the Part B R/L/C element values are **estimated** (the assignment leaves them blank) and reproduce the measured curve's f₀ and Q.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+Note: the app's visible strings are in Spanish (no i18n layer) by design — only the docs are bilingual.
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+## Development
 
-## Learn More
+```bash
+npm install
+npm run dev      # dev server at http://localhost:3000
+npm run build    # production build
+npm test         # RLC engine tests
+```
 
-To learn more about Next.js, take a look at the following resources:
-
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
-
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+See [`AGENTS.md`](./AGENTS.md) for the project's architecture conventions.
