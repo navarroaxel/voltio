@@ -1,5 +1,7 @@
 "use client";
 
+import { useLanguage } from "@/i18n/LanguageContext";
+
 interface PointSelectorProps {
   count: number;
   index: number;
@@ -15,6 +17,7 @@ export function PointSelector({
   label,
   hint,
 }: PointSelectorProps) {
+  const { t } = useLanguage();
   return (
     <div className="space-y-2">
       <div className="flex items-center justify-between">
@@ -32,7 +35,7 @@ export function PointSelector({
           type="button"
           onClick={() => onChange(Math.max(0, index - 1))}
           disabled={index === 0}
-          aria-label="Punto anterior"
+          aria-label={t("sim.pointSelector.prev")}
           className="rounded-lg border border-neutral-300 px-2.5 py-1 text-sm disabled:opacity-40 dark:border-neutral-700"
         >
           ←
@@ -43,13 +46,15 @@ export function PointSelector({
           max={count - 1}
           value={index}
           onChange={(e) => onChange(Number(e.target.value))}
+          aria-label={t("sim.pointSelector.slider")}
+          aria-valuetext={hint ? `${label} — ${hint}` : label}
           className="h-2 flex-1 cursor-pointer accent-blue-600"
         />
         <button
           type="button"
           onClick={() => onChange(Math.min(count - 1, index + 1))}
           disabled={index === count - 1}
-          aria-label="Punto siguiente"
+          aria-label={t("sim.pointSelector.next")}
           className="rounded-lg border border-neutral-300 px-2.5 py-1 text-sm disabled:opacity-40 dark:border-neutral-700"
         >
           →

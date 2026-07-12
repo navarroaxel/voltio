@@ -2,6 +2,7 @@
 
 import { useEffect, useRef } from "react";
 import { useUI } from "@/store/ui-store";
+import { useLanguage } from "@/i18n/LanguageContext";
 import type { RLCResult } from "@/lib/types";
 import { fmt } from "@/lib/format";
 
@@ -76,6 +77,7 @@ export function PhasorDiagram({ result, height = 300 }: PhasorDiagramProps) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const wrapRef = useRef<HTMLDivElement>(null);
   const { state } = useUI();
+  const { t, language } = useLanguage();
 
   useEffect(() => {
     const canvas = canvasRef.current;
@@ -107,7 +109,7 @@ export function PhasorDiagram({ result, height = 300 }: PhasorDiagramProps) {
       ctx.textAlign = "center";
       ctx.textBaseline = "middle";
       ctx.fillText(
-        "I = 0 — capacitor abierto, no hay diagrama fasorial",
+        t("sim.phasorDiagram.openCapacitor"),
         cssW / 2,
         cssH / 2,
       );
@@ -156,7 +158,7 @@ export function PhasorDiagram({ result, height = 300 }: PhasorDiagramProps) {
     ctx.fillStyle = iCol;
     ctx.textAlign = "left";
     ctx.textBaseline = "top";
-    ctx.fillText("I (ref)", px(0) + iLen + 4, py(0) + 4);
+    ctx.fillText(t("sim.phasorDiagram.iRef"), px(0) + iLen + 4, py(0) + 4);
 
     // Tip-to-tail polygon: UR → UL → UC.
     arrow(ctx, px(O.x), py(O.y), px(A.x), py(A.y), COL.UR, 2);
@@ -199,11 +201,25 @@ export function PhasorDiagram({ result, height = 300 }: PhasorDiagramProps) {
     ctx.textAlign = "right";
     ctx.textBaseline = "bottom";
     ctx.fillText(`φ = ${fmt(result.phiDeg, 1)}°`, cssW - 8, cssH - 8);
-  }, [result, height, state.theme]);
+  }, [result, height, state.theme, t, language]);
+
+  const ariaLabel =
+    language === "es"
+      ? `Diagrama fasorial de tensiones: U sobre R = ${fmt(result.UR, 1)} V, ` +
+        `U sobre L = ${fmt(result.UL, 1)} V, U sobre C = ${fmt(result.UC, 1)} V, ` +
+        `corriente I = ${fmt(result.I, 3)} A, desfasaje φ = ${fmt(result.phiDeg, 1)}°.`
+      : `Voltage phasor diagram: U across R = ${fmt(result.UR, 1)} V, ` +
+        `U across L = ${fmt(result.UL, 1)} V, U across C = ${fmt(result.UC, 1)} V, ` +
+        `current I = ${fmt(result.I, 3)} A, phase φ = ${fmt(result.phiDeg, 1)}°.`;
 
   return (
     <div ref={wrapRef} className="w-full">
-      <canvas ref={canvasRef} className="block" />
+      <canvas
+        ref={canvasRef}
+        className="block"
+        role="img"
+        aria-label={ariaLabel}
+      />
     </div>
   );
 }

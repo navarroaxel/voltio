@@ -24,6 +24,7 @@ import {
   UF,
 } from "@/lib/measured-data";
 import { fmt } from "@/lib/format";
+import { useLanguage } from "@/i18n/LanguageContext";
 
 const COL = {
   UR: "#2563eb",
@@ -42,19 +43,21 @@ const iMax = PART_A.U / (PART_A.R + PART_A.RL); // A, asymptotic limit (C → �
 export default function PartAPage() {
   const { state, dispatch } = usePartA();
   const { viewMode, cIndex, fIndex, chartTab } = state;
+  const { t } = useLanguage();
 
   return (
     <main className="mx-auto max-w-6xl space-y-5 px-4 py-8 sm:px-6">
       <header>
         <p className="text-xs font-semibold tracking-wide text-blue-600 uppercase">
-          TP N°1 · Parte A
+          {t("parta.eyebrow")}
         </p>
         <h1 className="mt-1 text-2xl font-bold tracking-tight">
-          RLC serie — se varía la capacidad C
+          {t("parta.title")}
         </h1>
         <p className="mt-2 text-sm text-neutral-600 dark:text-neutral-300">
-          Fuente Variac a {fmt(PART_A.U, 0)} V / {PART_A.f} Hz constante.
-          R&nbsp;=&nbsp;{PART_A.R}&nbsp;Ω, L&nbsp;=&nbsp;{fmt(PART_A.L, 2)}
+          {t("parta.header.source")} {fmt(PART_A.U, 0)} V / {PART_A.f} Hz{" "}
+          {t("parta.header.constant")} R&nbsp;=&nbsp;{PART_A.R}&nbsp;Ω,
+          L&nbsp;=&nbsp;{fmt(PART_A.L, 2)}
           &nbsp;H, R<sub>L</sub>&nbsp;=&nbsp;{fmt(PART_A.RL, 1)}&nbsp;Ω.
         </p>
       </header>
@@ -64,18 +67,18 @@ export default function PartAPage() {
       </Card>
 
       <div className="rounded-xl border border-amber-300 bg-amber-50 p-4 text-sm text-amber-900 dark:border-amber-800 dark:bg-amber-950/40 dark:text-amber-200">
-        <strong>Condición de resonancia (punto 6a):</strong> para resonar a{" "}
-        {PART_A.f} Hz se necesita C = 1/(ω²·L) ={" "}
-        <strong>{fmt(cResonance / UF, 1)} µF</strong>. La caja de capacitores
-        llega sólo a ~64 µF (8 escalones × 8 µF), muy por debajo de eso, así
-        que <strong>el circuito nunca alcanza la resonancia</strong> en este
-        ensayo: siempre es capacitivo (X<sub>C</sub> &gt; X<sub>L</sub>). Al no
-        resonar, la corriente sólo crece asintóticamente hacia{" "}
+        <strong>{t("parta.resCondition.label")}</strong>{" "}
+        {t("parta.resCondition.toResonateAt")} {PART_A.f} Hz{" "}
+        {t("parta.resCondition.needed")}{" "}
+        <strong>{fmt(cResonance / UF, 1)} µF</strong>.{" "}
+        {t("parta.resCondition.boxIntro")}{" "}
+        <strong>{t("parta.resCondition.neverReaches")}</strong>{" "}
+        {t("parta.resCondition.testDetail")} (X<sub>C</sub> &gt; X
+        <sub>L</sub>). {t("parta.resCondition.noResonanceGrowth")}{" "}
         <strong>
           I<sub>max</sub> = U/(R + R<sub>L</sub>) ≈ {fmt(iMax, 3)} A
         </strong>{" "}
-        y el factor de mérito a los 50 Hz de resonancia es muy bajo (Q ≈
-        0,03), lo que da una curva chata y poco selectiva.
+        {t("parta.resCondition.lowQ")}
       </div>
 
       {/* View selector */}
@@ -89,7 +92,7 @@ export default function PartAPage() {
               : "rounded-md px-3 py-1.5 text-sm font-medium text-neutral-500 dark:text-neutral-400"
           }
         >
-          Barrido de C (ensayo medido)
+          {t("parta.view.sweepC")}
         </button>
         <button
           type="button"
@@ -100,7 +103,7 @@ export default function PartAPage() {
               : "rounded-md px-3 py-1.5 text-sm font-medium text-neutral-500 dark:text-neutral-400"
           }
         >
-          Barrido de f (punto 6d)
+          {t("parta.view.sweepF")}
         </button>
       </div>
 
@@ -126,6 +129,7 @@ function SweepC({
   chartTab: "voltages" | "iz" | "pq";
   dispatch: ReturnType<typeof usePartA>["dispatch"];
 }) {
+  const { t } = useLanguage();
   const row = PART_A_MEASURED[cIndex];
   const result = calcRLC({ ...PART_A_BASE, C: row.C * UF });
 
@@ -152,42 +156,39 @@ function SweepC({
   return (
     <div className="grid grid-cols-1 gap-5 lg:grid-cols-2">
       <div className="space-y-5">
-        <Card title="Punto de medición">
+        <Card title={t("parta.card.pointMeasurement")}>
           <PointSelector
             count={PART_A_MEASURED.length}
             index={cIndex}
             onChange={(i) => dispatch({ type: "SET_C_INDEX", index: i })}
             label={`C = ${fmt(row.C, 0)} µF`}
-            hint={row.C === 0 ? "capacitor abierto" : undefined}
+            hint={row.C === 0 ? t("parta.hint.openCapacitor") : undefined}
           />
           <div className="mt-4">
             <MetricsGrid metrics={metrics} />
           </div>
         </Card>
 
-        <Card title="Diagrama fasorial (tensiones)">
+        <Card title={t("parta.card.phasor")}>
           <PhasorDiagram result={result} />
         </Card>
 
-        <Card title="Diagrama de impedancia">
+        <Card title={t("parta.card.impedance")}>
           <ImpedanceTriangle result={result} />
         </Card>
 
-        <Card title="Conclusiones (punto 6g)">
+        <Card title={t("parta.sweepC.conclusionsCard")}>
           <p className="text-sm text-neutral-600 dark:text-neutral-300">
-            La corriente medida crece con C pero nunca muestra un pico de
-            resonancia: la capacidad disponible (~64 µF) queda muy por debajo
-            de los ~{fmt(cResonance / UF, 0)} µF necesarios para resonar a 50
-            Hz. Tiende asintóticamente a I<sub>max</sub> ≈ {fmt(iMax, 3)} A sin
-            llegar a alcanzarla. Además R = {PART_A.R} Ω domina ampliamente
-            sobre las reactancias (Q ≪ 1), por lo que la respuesta es apenas
-            selectiva — consistente con lo que muestra la tabla medida.
+            {t("parta.sweepC.concl1")}
+            {fmt(cResonance / UF, 0)} µF {t("parta.sweepC.concl2")} I
+            <sub>max</sub> ≈ {fmt(iMax, 3)} A {t("parta.sweepC.concl3")} R ={" "}
+            {PART_A.R} Ω {t("parta.sweepC.concl4")}
           </p>
         </Card>
       </div>
 
       <div className="space-y-5">
-        <Card title="Gráficos en función de C">
+        <Card title={t("parta.sweepC.chartsCard")}>
           <ChartTabs
             tabs={[
               { key: "voltages", label: "U_R, U_L, U_C" },
@@ -201,7 +202,7 @@ function SweepC({
             {chartTab === "voltages" && (
               <LineChart
                 xLabel="C (µF)"
-                yLabel="Tensión (V)"
+                yLabel={t("parta.chart.voltageLabel")}
                 xDecimals={0}
                 series={[
                   line(
@@ -303,7 +304,7 @@ function SweepC({
           </div>
         </Card>
 
-        <Card title="Tabla de valores medidos">
+        <Card title={t("parta.sweepC.tableCard")}>
           <DataTable
             columns={[
               { label: "C", sub: "µF" },
@@ -344,6 +345,7 @@ function SweepF({
   chartTab: "voltages" | "iz" | "pq";
   dispatch: ReturnType<typeof usePartA>["dispatch"];
 }) {
+  const { t } = useLanguage();
   const C = PART_A_FIRST_C * UF;
   const f = PART_A_FREQS[fIndex];
   const result = calcRLC({ ...PART_A_BASE, C, f });
@@ -387,15 +389,14 @@ function SweepF({
     <div className="grid grid-cols-1 gap-5 lg:grid-cols-2">
       <div className="space-y-5">
         <div className="rounded-xl border border-blue-200 bg-blue-50 p-4 text-sm text-blue-900 dark:border-blue-900 dark:bg-blue-950/40 dark:text-blue-200">
-          Para el primer C de la tabla (C = {PART_A_FIRST_C} µF), la
-          frecuencia de resonancia teórica es{" "}
-          <strong>f₀ = {fmt(PART_A_F0, 1)} Hz</strong> (punto 6c). El barrido
-          toma 5 frecuencias por debajo y 5 por encima. Aun en f₀ el factor de
-          mérito sigue siendo ≪ 1 (Q ≈ {fmt(qF0, 3)}), por lo que el pico de
-          resonancia teórico es apenas pronunciado.
+          {t("parta.sweepF.info1")} {PART_A_FIRST_C} µF),{" "}
+          {t("parta.sweepF.info2")}{" "}
+          <strong>f₀ = {fmt(PART_A_F0, 1)} Hz</strong>{" "}
+          {t("parta.sweepF.info3")} {fmt(qF0, 3)}
+          {t("parta.sweepF.info4")}
         </div>
 
-        <Card title={`Punto de cálculo · ${condition}`}>
+        <Card title={`${t("parta.sweepF.pointCard")} · ${condition}`}>
           <PointSelector
             count={PART_A_FREQS.length}
             index={fIndex}
@@ -408,17 +409,17 @@ function SweepF({
           </div>
         </Card>
 
-        <Card title="Diagrama fasorial (tensiones)">
+        <Card title={t("parta.card.phasor")}>
           <PhasorDiagram result={result} />
         </Card>
 
-        <Card title="Diagrama de impedancia">
+        <Card title={t("parta.card.impedance")}>
           <ImpedanceTriangle result={result} />
         </Card>
       </div>
 
       <div className="space-y-5">
-        <Card title="Gráficos en función de f">
+        <Card title={t("parta.sweepF.chartsCard")}>
           <ChartTabs
             tabs={[
               { key: "voltages", label: "U_R, U_L, U_C" },
@@ -432,7 +433,7 @@ function SweepF({
             {chartTab === "voltages" && (
               <LineChart
                 xLabel="f (Hz)"
-                yLabel="Tensión (V)"
+                yLabel={t("parta.chart.voltageLabel")}
                 markers={[marker]}
                 series={[
                   line(
@@ -523,7 +524,7 @@ function SweepF({
           </div>
         </Card>
 
-        <Card title="Tabla del punto 6d (calculada)">
+        <Card title={t("parta.sweepF.tableCard")}>
           <DataTable
             columns={[
               { label: "f", sub: "Hz" },

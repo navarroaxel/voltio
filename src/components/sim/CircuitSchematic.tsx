@@ -7,10 +7,17 @@
  * Uses currentColor to adapt to light/dark mode.
  */
 
+import { useLanguage } from "@/i18n/LanguageContext";
+
 type Variant = "parteA" | "parteB";
 
 const TOP = 70;
 const BOT = 180;
+const METER_R = 14;
+
+// Series meters on the top wire (Part A): wattmeter W and ammeter A.
+const W_X = 165;
+const A_X = 205;
 
 function resistorPath(x: number, w: number, y: number): string {
   const seg = w / 6;
@@ -49,7 +56,7 @@ function Meter({
       <circle
         cx={cx}
         cy={cy}
-        r={14}
+        r={METER_R}
         fill="none"
         stroke={color ?? "currentColor"}
         strokeWidth={1.6}
@@ -69,6 +76,7 @@ function Meter({
 }
 
 export function CircuitSchematic({ variant }: { variant: Variant }) {
+  const { t } = useLanguage();
   const wire = "currentColor";
   const blue = "#2563eb";
   const red = "#dc2626";
@@ -83,18 +91,25 @@ export function CircuitSchematic({ variant }: { variant: Variant }) {
 
   return (
     <svg
-      viewBox="0 0 620 230"
+      viewBox="0 0 525 230"
       className="h-auto w-full text-neutral-700 dark:text-neutral-200"
       role="img"
       aria-label={
         variant === "parteA"
-          ? "Circuito RLC serie de la Parte A con Variac, watímetro y amperímetro"
-          : "Circuito RLC serie de la Parte B alimentado por generador de funciones"
+          ? t("sim.schematic.ariaPartA")
+          : t("sim.schematic.ariaPartB")
       }
     >
-      {/* Loop wires */}
+      {/* Loop wires. In Part A the top-left segment breaks around the
+          series W and A meters so the wire never crosses their circles. */}
       <path
-        d={`M 70 ${TOP} H ${rX}`}
+        d={
+          variant === "parteA"
+            ? `M 70 ${TOP} H ${W_X - METER_R} ` +
+              `M ${W_X + METER_R} ${TOP} H ${A_X - METER_R} ` +
+              `M ${A_X + METER_R} ${TOP} H ${rX}`
+            : `M 70 ${TOP} H ${rX}`
+        }
         stroke={wire}
         strokeWidth={1.6}
         fill="none"
@@ -112,7 +127,7 @@ export function CircuitSchematic({ variant }: { variant: Variant }) {
         fill="none"
       />
       <path
-        d={`M ${cX + 30} ${TOP} H 560 V ${BOT} H 70`}
+        d={`M ${cX + 30} ${TOP} H ${cX + 38} V ${BOT} H 70`}
         stroke={wire}
         strokeWidth={1.6}
         fill="none"
@@ -140,10 +155,22 @@ export function CircuitSchematic({ variant }: { variant: Variant }) {
             strokeWidth={1.6}
             fill="none"
           />
-          <text x={20} y={120} fontSize={11} fill="currentColor">
+          <text
+            x={70}
+            y={32}
+            textAnchor="middle"
+            fontSize={11}
+            fill="currentColor"
+          >
             Variac
           </text>
-          <text x={14} y={135} fontSize={10} fill="currentColor">
+          <text
+            x={70}
+            y={46}
+            textAnchor="middle"
+            fontSize={10}
+            fill="currentColor"
+          >
             50 V · 50 Hz
           </text>
         </>
@@ -209,17 +236,12 @@ export function CircuitSchematic({ variant }: { variant: Variant }) {
       />
       <Meter cx={120} cy={134} label={variant === "parteA" ? "V1" : "V"} />
 
-      {/* Series meters (Part A only) */}
+      {/* Series meters (Part A only). The top wire already breaks around
+          them, so the circles sit in the gaps without a line through them. */}
       {variant === "parteA" && (
         <>
-          <Meter cx={165} cy={TOP} label="W" />
-          <Meter cx={205} cy={TOP} label="A" />
-          <path
-            d={`M 179 ${TOP} H 191`}
-            stroke={wire}
-            strokeWidth={1.6}
-            fill="none"
-          />
+          <Meter cx={W_X} cy={TOP} label="W" />
+          <Meter cx={A_X} cy={TOP} label="A" />
         </>
       )}
 
@@ -277,32 +299,42 @@ export function CircuitSchematic({ variant }: { variant: Variant }) {
       {/* Voltmeters across the elements */}
       {variant === "parteB" ? (
         <>
-          <ElementVoltmeter x={rX + rW / 2} label="VR" color={blue} />
-          <ElementVoltmeter x={lX + lW / 2} label="VL" color={red} />
-          <ElementVoltmeter x={cX + 14} label="VC" color={green} />
+          <ElementVoltmeter
+            x={rX + rW / 2}
+            half={rW / 2}
+            label="U"
+            sub="R"
+            color={wire}
+          />
+          <ElementVoltmeter
+            x={lX + lW / 2}
+            half={lW / 2}
+            label="U"
+            sub="L"
+            color={wire}
+          />
+          <ElementVoltmeter x={cX + 15} half={15} label="U" sub="C" color={wire} />
         </>
       ) : (
         <>
-          {/* V2: tester across the L–C segment */}
-          <path
-            d={`M ${lX} ${TOP} V 34`}
-            stroke={wire}
-            strokeWidth={1}
-            fill="none"
+          {/* One voltmeter per element (U_R, U_L, U_C). The lab used a
+              single tester V2 moved from element to element, but showing
+              one per element matches the measured columns and is clearer. */}
+          <ElementVoltmeter
+            x={rX + rW / 2}
+            half={rW / 2}
+            label="U"
+            sub="R"
+            color={wire}
           />
-          <path
-            d={`M ${cX + 30} ${TOP} V 34`}
-            stroke={wire}
-            strokeWidth={1}
-            fill="none"
+          <ElementVoltmeter
+            x={lX + lW / 2}
+            half={lW / 2}
+            label="U"
+            sub="L"
+            color={wire}
           />
-          <path
-            d={`M ${lX} 34 H ${cX + 30}`}
-            stroke={wire}
-            strokeWidth={1}
-            fill="none"
-          />
-          <Meter cx={(lX + cX + 30) / 2} cy={34} label="V2" />
+          <ElementVoltmeter x={cX + 15} half={15} label="U" sub="C" color={wire} />
         </>
       )}
     </svg>
@@ -311,34 +343,39 @@ export function CircuitSchematic({ variant }: { variant: Variant }) {
 
 function ElementVoltmeter({
   x,
+  half,
   label,
+  sub,
   color,
 }: {
   x: number;
+  half: number; // distance from center to each element terminal
   label: string;
+  sub?: string;
   color: string;
 }) {
-  const top = 30;
+  const top = 22;
+  const r = 13;
+  const lead = half + 5; // slightly wider than the element for breathing room
   return (
     <g>
+      {/* Leads tap the element's two terminals and bracket up to the meter. */}
       <path
-        d={`M ${x - 18} ${TOP} V ${top + 14}`}
+        d={`M ${x - lead} ${TOP} V ${top} H ${x - r}`}
         stroke={color}
-        strokeWidth={1}
+        strokeWidth={1.6}
         fill="none"
-        opacity={0.6}
       />
       <path
-        d={`M ${x + 18} ${TOP} V ${top + 14}`}
+        d={`M ${x + lead} ${TOP} V ${top} H ${x + r}`}
         stroke={color}
-        strokeWidth={1}
+        strokeWidth={1.6}
         fill="none"
-        opacity={0.6}
       />
       <circle
         cx={x}
         cy={top}
-        r={13}
+        r={r}
         fill="none"
         stroke={color}
         strokeWidth={1.6}
@@ -352,6 +389,11 @@ function ElementVoltmeter({
         fill={color}
       >
         {label}
+        {sub ? (
+          <tspan fontSize={8} dy={2}>
+            {sub}
+          </tspan>
+        ) : null}
       </text>
     </g>
   );

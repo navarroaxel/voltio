@@ -1,12 +1,15 @@
+"use client";
+
 import Link from "next/link";
 import { Card } from "@/components/ui/Card";
+import { useLanguage } from "@/i18n/LanguageContext";
 
-const OBJETIVOS = [
-  "Verificar experimentalmente la respuesta de un circuito RLC serie y su respuesta en frecuencia al ser excitado por una tensión senoidal de frecuencia variable.",
-  "Realizar diagramas fasoriales y de impedancia.",
-  "Calcular las magnitudes no medidas con las fórmulas teóricas y completar las tablas.",
-  "Analizar las respuestas y sacar conclusiones.",
-  "Responder el cuestionario.",
+const OBJETIVOS_KEYS = [
+  "theory.objectives.item1",
+  "theory.objectives.item2",
+  "theory.objectives.item3",
+  "theory.objectives.item4",
+  "theory.objectives.item5",
 ];
 
 function Formula({ children }: { children: React.ReactNode }) {
@@ -18,99 +21,100 @@ function Formula({ children }: { children: React.ReactNode }) {
 }
 
 export default function ResonanciaHub() {
+  const { t } = useLanguage();
+
   return (
     <main className="mx-auto max-w-4xl space-y-6 px-4 py-8 sm:px-6">
       <header>
         <p className="text-xs font-semibold tracking-wide text-blue-600 uppercase">
-          TP N°1
+          {t("theory.badge")}
         </p>
-        <h1 className="mt-1 text-3xl font-bold tracking-tight">Resonancia</h1>
+        <h1 className="mt-1 text-3xl font-bold tracking-tight">
+          {t("theory.title")}
+        </h1>
         <p className="mt-2 text-neutral-600 dark:text-neutral-300">
-          Estudio de un circuito RLC serie en dos ensayos: variando la capacidad
-          a frecuencia fija (Parte A) y variando la frecuencia con los elementos
-          fijos (Parte B).
+          {t("theory.intro")}
         </p>
       </header>
 
-      <Card title="Objetivos">
+      <Card title={t("theory.objectives.title")}>
         <ol className="list-decimal space-y-1.5 pl-5 text-sm text-neutral-700 dark:text-neutral-300">
-          {OBJETIVOS.map((o, i) => (
-            <li key={i}>{o}</li>
+          {OBJETIVOS_KEYS.map((key, i) => (
+            <li key={i}>{t(key)}</li>
           ))}
         </ol>
       </Card>
 
-      <Card title="Resumen teórico">
+      <Card title={t("theory.summary.title")}>
         <div className="space-y-3 text-sm text-neutral-700 dark:text-neutral-300">
           <p>
-            En un circuito <strong>RLC serie</strong> la impedancia es{" "}
+            {t("theory.summary.p1.part1")}
+            <strong>{t("theory.summary.p1.rlcSerie")}</strong>
+            {t("theory.summary.p1.part2")}{" "}
             <Formula>
               Z = (R + R<sub>L</sub>) + j(X<sub>L</sub> − X<sub>C</sub>)
             </Formula>
-            , con <Formula>X<sub>L</sub> = ωL</Formula> y{" "}
-            <Formula>X<sub>C</sub> = 1/(ωC)</Formula>. El ángulo de fase es{" "}
+            {t("theory.summary.p1.part3")} <Formula>X<sub>L</sub> = ωL</Formula>{" "}
+            {t("theory.summary.p1.part4")}{" "}
+            <Formula>X<sub>C</sub> = 1/(ωC)</Formula>. {t("theory.summary.p1.part5")}{" "}
             <Formula>
               φ = arctg((X<sub>L</sub> − X<sub>C</sub>)/(R + R<sub>L</sub>))
             </Formula>
-            .
+            {t("theory.summary.p1.part6")}
           </p>
           <p>
-            La <strong>resonancia</strong> ocurre cuando{" "}
+            {t("theory.summary.p2.part1")}
+            <strong>{t("theory.summary.p2.resonancia")}</strong>
+            {t("theory.summary.p2.part2")}{" "}
             <Formula>
               X<sub>L</sub> = X<sub>C</sub>
             </Formula>
-            : la reactancia neta se anula, la
-            impedancia es mínima e igual a la resistencia total, y la corriente
-            es máxima. La frecuencia de resonancia es{" "}
-            <Formula>f₀ = 1/(2π·√(L·C))</Formula>.
+            {t("theory.summary.p2.part3")}{" "}
+            <Formula>f₀ = 1/(2π·√(L·C))</Formula>
+            {t("theory.summary.p2.part4")}
           </p>
           <p>
-            En resonancia el circuito es puramente resistivo:{" "}
-            <Formula>φ = 0</Formula> y el factor de potencia es{" "}
-            <Formula>cos φ = 1</Formula>. Las caídas sobre la bobina y el
-            capacitor se igualan y pueden superar ampliamente la tensión de
-            fuente, en una relación dada por el{" "}
-            <strong>factor de mérito</strong>{" "}
+            {t("theory.summary.p3.part1")}{" "}
+            <Formula>φ = 0</Formula> {t("theory.summary.p3.part2")}{" "}
+            <Formula>cos φ = 1</Formula>
+            {t("theory.summary.p3.part3")}
+            <strong>{t("theory.summary.p3.factorMerito")}</strong>{" "}
             <Formula>
               Q = (1/(R+R<sub>L</sub>))·√(L/C)
             </Formula>
-            , ya que{" "}
+            {t("theory.summary.p3.part4")}{" "}
             <Formula>
               U<sub>L</sub> = U<sub>C</sub> = Q·U
             </Formula>
-            .
+            {t("theory.summary.p3.part5")}
           </p>
         </div>
       </Card>
 
-      <Card title="Procedimiento de medición">
+      <Card title={t("theory.procedure.title")}>
         <p className="text-sm text-neutral-700 dark:text-neutral-300">
-          Para cada ensayo se arma el circuito sin energizar, se ajustan las
-          escalas de los instrumentos, se eleva la tensión desde cero hasta el
-          valor pedido y se registran las lecturas leyendo en el último tercio
-          de escala para minimizar errores. Luego se baja la tensión a cero y se
-          desarma el circuito.
+          {t("theory.procedure.text")}
         </p>
       </Card>
 
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
         <NavCard
           href="/resonancia/part-a"
-          tag="Parte A"
-          title="Varía la capacidad C"
-          desc="f = 50 Hz fija. Barrido de C y barrido de frecuencia para f₀."
+          tag={t("theory.nav.partA.tag")}
+          title={t("theory.nav.partA.title")}
+          desc={t("theory.nav.partA.desc")}
         />
         <NavCard
           href="/resonancia/part-b"
-          tag="Parte B"
-          title="Varía la frecuencia f"
-          desc="R, L, C fijos. Resonancia en ≈509 Hz."
+          tag={t("theory.nav.partB.tag")}
+          title={t("theory.nav.partB.title")}
+          desc={t("theory.nav.partB.desc")}
         />
         <NavCard
           href="/resonancia/questionnaire"
-          tag="Cuestionario"
-          title="5 preguntas"
-          desc="Análisis y valores de apoyo calculados."
+          tag={t("theory.nav.quiz.tag")}
+          title={t("theory.nav.quiz.title")}
+          desc={t("theory.nav.quiz.desc")}
         />
       </div>
     </main>

@@ -1,9 +1,12 @@
+"use client";
+
 import Link from "next/link";
+import { useLanguage } from "@/i18n/LanguageContext";
 
 interface TPCard {
   n: number;
-  title: string;
-  desc: string;
+  titleKey: string;
+  descKey: string;
   href?: string;
   status: "activo" | "próximamente";
 }
@@ -11,43 +14,42 @@ interface TPCard {
 const TPS: TPCard[] = [
   {
     n: 1,
-    title: "Resonancia",
-    desc: "Circuito RLC serie: respuesta variando la capacidad (Parte A) y variando la frecuencia (Parte B).",
+    titleKey: "home.tp1.title",
+    descKey: "home.tp1.desc",
     href: "/resonancia",
     status: "activo",
   },
   {
     n: 2,
-    title: "Sistemas trifásicos",
-    desc: "Cargas en estrella y triángulo, tensiones y corrientes de línea y de fase.",
+    titleKey: "home.tp2.title",
+    descKey: "home.tp2.desc",
     status: "próximamente",
   },
   {
     n: 3,
-    title: "Régimen poliarmónico",
-    desc: "Análisis de señales no senoidales y descomposición en armónicas.",
+    titleKey: "home.tp3.title",
+    descKey: "home.tp3.desc",
     status: "próximamente",
   },
   {
     n: 4,
-    title: "Circuitos acoplados",
-    desc: "Inductancia mutua y acoplamiento magnético entre bobinas.",
+    titleKey: "home.tp4.title",
+    descKey: "home.tp4.desc",
     status: "próximamente",
   },
 ];
 
 export default function Home() {
+  const { t } = useLanguage();
+
   return (
     <main className="mx-auto max-w-6xl px-4 py-10 sm:px-6">
       <div className="mb-10 max-w-2xl">
         <h1 className="text-3xl font-bold tracking-tight">
-          Trabajos prácticos de Electrotécnica I
+          {t("home.heading")}
         </h1>
         <p className="mt-3 text-neutral-600 dark:text-neutral-300">
-          Simuladores interactivos para los laboratorios de la cátedra
-          (UTN&nbsp;–&nbsp;FRBA). Cada TP muestra los datos medidos en el
-          laboratorio junto con las curvas teóricas, calcula las magnitudes y
-          arma los gráficos y diagramas que pide el informe.
+          {t("home.intro")}
         </p>
       </div>
 
@@ -57,7 +59,8 @@ export default function Home() {
             <>
               <div className="flex items-center justify-between">
                 <span className="text-xs font-semibold tracking-wide text-blue-600 uppercase">
-                  TP N°{tp.n}
+                  {t("home.tp.prefix")}
+                  {tp.n}
                 </span>
                 <span
                   className={
@@ -66,12 +69,16 @@ export default function Home() {
                       : "rounded-full bg-neutral-100 px-2 py-0.5 text-xs font-medium text-neutral-500 dark:bg-neutral-800 dark:text-neutral-400"
                   }
                 >
-                  {tp.status}
+                  {tp.status === "activo"
+                    ? t("home.status.activo")
+                    : t("home.status.proximamente")}
                 </span>
               </div>
-              <h2 className="mt-2 text-xl font-semibold">{tp.title}</h2>
+              <h2 className="mt-2 text-xl font-semibold">
+                {t(tp.titleKey)}
+              </h2>
               <p className="mt-1 text-sm text-neutral-600 dark:text-neutral-300">
-                {tp.desc}
+                {t(tp.descKey)}
               </p>
             </>
           );

@@ -1,3 +1,5 @@
+"use client";
+
 import { Card } from "@/components/ui/Card";
 import { calcRLC, resonantF } from "@/lib/rlc-engine";
 import {
@@ -7,10 +9,10 @@ import {
   UF,
 } from "@/lib/measured-data";
 import { fmt } from "@/lib/format";
+import { useLanguage } from "@/i18n/LanguageContext";
 
 const f0 = resonantF(PART_B.L, PART_B.C * UF);
-const res = calcRLC({ ...PART_B_BASE, f: f0 }); // at resonance
-const r50 = calcRLC({ ...PART_B_BASE, f: 50 }); // at 50 Hz
+const r50 = calcRLC({ ...PART_B_BASE, f: 50 }); // at 50 Hz (hypothetical)
 const rz = PART_B_RESONANCE; // measured resonance (Part B)
 
 function QA({
@@ -50,139 +52,147 @@ function Num({ children }: { children: React.ReactNode }) {
 }
 
 export default function CuestionarioPage() {
+  const { t } = useLanguage();
+
   return (
     <main className="mx-auto max-w-3xl space-y-5 px-4 py-8 sm:px-6">
       <header>
         <p className="text-xs font-semibold tracking-wide text-blue-600 uppercase">
-          TP N°1 · Cuestionario
+          {t("quiz.title")}
         </p>
         <h1 className="mt-1 text-2xl font-bold tracking-tight">
-          Preguntas y análisis
+          {t("quiz.heading")}
         </h1>
         <p className="mt-2 text-sm text-neutral-600 dark:text-neutral-300">
-          Respuestas orientativas con los valores calculados para el circuito de
-          la Parte B (en resonancia, f₀ ≈ {fmt(f0, 0)} Hz).
+          {t("quiz.intro.p1")} {fmt(rz.f, 0)} {t("quiz.intro.p2")}
         </p>
       </header>
 
-      <QA
-        letter="a"
-        question="¿Cómo se hubiera comportado el circuito si los ensayos se hacían con el circuito en paralelo?"
-      >
+      <QA letter="a" question={t("quiz.q1.question")}>
         <p>
-          En el <strong>RLC paralelo</strong> los roles se invierten respecto al
-          serie. En resonancia la <strong>impedancia es máxima</strong> (no
-          mínima), por lo que la{" "}
-          <strong>corriente total de línea es mínima</strong> (en el serie es
-          máxima). La tensión es común a las tres ramas, y son las{" "}
-          <strong>corrientes</strong> de L y C las que se amplifican y se
-          compensan entre sí (Q·I), en lugar de las tensiones. La potencia
-          activa sigue siendo la única consumida (la reactiva se cancela) y el
-          factor de potencia vuelve a ser 1.
+          {t("quiz.q1.p1")} <strong>{t("quiz.q1.strong1")}</strong>{" "}
+          {t("quiz.q1.p2")} <strong>{t("quiz.q1.strong2")}</strong>{" "}
+          {t("quiz.q1.p3")} <strong>{t("quiz.q1.strong3")}</strong>{" "}
+          {t("quiz.q1.p4")} <strong>{t("quiz.q1.strong4")}</strong>{" "}
+          {t("quiz.q1.p5")}
         </p>
       </QA>
 
-      <QA
-        letter="b"
-        question="En resonancia, ¿cómo resultaron las caídas de tensión? Considere el factor de mérito Q."
-      >
+      <QA letter="b" question={t("quiz.q2.question")}>
         <p>
-          En resonancia{" "}
+          {t("quiz.q2.p1a")}{" "}
           <Num>
             X<sub>L</sub> = X<sub>C</sub>
           </Num>
-          , así que las caídas medidas sobre la bobina y el capacitor quedan
-          muy próximas entre sí:{" "}
+          {t("quiz.q2.p1b")}{" "}
           <Num>
             U<sub>L</sub> = {fmt(rz.UL, 2)} V
           </Num>{" "}
-          y{" "}
+          {t("quiz.q2.p1c")}{" "}
           <Num>
             U<sub>C</sub> = {fmt(rz.UC, 2)} V
           </Num>
-          , muy por encima de la tensión de fuente (
-          <Num>{fmt(rz.U, 1)} V</Num>). Esa amplificación es justamente el
-          factor de mérito:{" "}
+          {t("quiz.q2.p1d")}
+          <Num>{fmt(rz.U, 1)} V</Num>
+          {t("quiz.q2.p1e")}{" "}
           <Num>
             Q = U<sub>L</sub>/U ≈ {fmt(rz.UL / rz.U, 1)}
           </Num>
-          .
+          {t("quiz.q2.p1f")}
         </p>
         <p>
-          <strong>Doble lectura de Q:</strong> respecto a la resistencia
-          externa R,{" "}
+          <strong>{t("quiz.q2.strong1")}</strong> {t("quiz.q2.p2a")}{" "}
           <Num>
-            Q = U<sub>C</sub>/U_RS ≈ {fmt(rz.UC / rz.URS, 1)}
+            Q = U<sub>C</sub>/U<sub>RS</sub> ≈ {fmt(rz.UC / rz.URS, 1)}
           </Num>
-          . La diferencia con el valor anterior (≈{fmt(rz.UL / rz.U, 1)})
-          revela la <strong>resistencia interna R</strong>
-          <sub>L</sub> <strong>de la bobina</strong>: el exceso{" "}
+          {t("quiz.q2.p2b")}
+          {fmt(rz.UL / rz.U, 1)}) {t("quiz.q2.p2c")}{" "}
+          <strong>{t("quiz.q2.strong2")}</strong>
+          <sub>L</sub> <strong>{t("quiz.q2.strong3")}</strong>
+          {t("quiz.q2.p2d")}{" "}
           <Num>
-            U − U_RS ≈ {fmt(rz.U - rz.URS, 2)} V
+            U − U<sub>RS</sub> ≈ {fmt(rz.U - rz.URS, 2)} V
           </Num>{" "}
-          cae en ella, no en la R externa. El Q correcto, el de la resistencia
-          total del circuito, es{" "}
-          <Num>Q ≈ {fmt(rz.UL / rz.U, 0)}</Num>.
+          {t("quiz.q2.p2e")}{" "}
+          <Num>Q ≈ {fmt(rz.UL / rz.U, 0)}</Num>
+          {t("quiz.q2.p2f")}
         </p>
       </QA>
 
-      <QA
-        letter="c"
-        question="¿Qué sucedió con las potencias y el factor de potencia en resonancia? Justifique."
-      >
+      <QA letter="c" question={t("quiz.q3.question")}>
         <p>
-          Al anularse la reactancia neta, la{" "}
-          <strong>potencia reactiva se hace cero</strong> (
-          <Num>Q ≈ {fmt(res.Qreact, 3)} VAR</Num>) y toda la potencia es activa:{" "}
-          <Num>P = {fmt(res.P * 1000, 1)} mW</Num>. La potencia aparente
-          coincide con la activa, por lo que el{" "}
-          <strong>factor de potencia es máximo</strong>:{" "}
-          <Num>cos φ = {fmt(res.fp, 3)}</Num> con{" "}
-          <Num>φ = {fmt(res.phiDeg, 1)}°</Num>.
+          {t("quiz.q3.p1")}{" "}
+          <Num>
+            X<sub>L</sub> = X<sub>C</sub>
+          </Num>
+          {t("quiz.q3.p2")} <Num>cos φ = 1</Num> {t("quiz.q3.p3")}{" "}
+          <Num>φ = 0°</Num>
+          {t("quiz.q3.p4")}
+        </p>
+        <p>
+          <strong>{t("quiz.q3.strongActive")}</strong> {t("quiz.q3.p5")}{" "}
+          <Num>
+            P = U·I = I²(R + R<sub>L</sub>)
+          </Num>
+          {t("quiz.q3.p6")}
+        </p>
+        <p>
+          <strong>{t("quiz.q3.strongReactive")}</strong> {t("quiz.q3.p7")}{" "}
+          <Num>
+            Q<sub>L</sub> = U<sub>L</sub>·I
+          </Num>
+          ,{" "}
+          <Num>
+            Q<sub>C</sub> = U<sub>C</sub>·I
+          </Num>
+          {t("quiz.q3.p8")}{" "}
+          <Num>
+            U<sub>L</sub> = {fmt(rz.UL, 2)} V ≈ U<sub>C</sub> = {fmt(rz.UC, 2)}{" "}
+            V
+          </Num>
+          {t("quiz.q3.p9")}
         </p>
       </QA>
 
-      <QA
-        letter="d"
-        question="¿Cómo resultaron la corriente y la impedancia en el estado de resonancia?"
-      >
+      <QA letter="d" question={t("quiz.q4.question")}>
         <p>
-          En la resonancia medida (medición N°{rz.n}, ~{fmt(rz.f, 0)} Hz) la
-          impedancia es <strong>mínima</strong> y la{" "}
-          <strong>corriente es máxima</strong>: la tensión sobre la
-          resistencia externa alcanza su valor más alto (
-          <Num>U_RS = {fmt(rz.URS, 3)} V</Num>), lo que implica{" "}
-          <Num>I = {fmt((rz.URS / PART_B.R) * 1000, 1)} mA</Num> máxima. Fuera
-          de f₀ la corriente cae a ambos lados, dibujando el pico en la tabla
-          medida.
+          {t("quiz.q4.p1")}
+          {rz.n}
+          {t("quiz.q4.p2")}
+          {fmt(rz.f, 0)} {t("quiz.q4.p3")} <strong>{t("quiz.q4.strong1")}</strong>{" "}
+          {t("quiz.q4.p4")} <strong>{t("quiz.q4.strong2")}</strong>
+          {t("quiz.q4.p5")}
+          <Num>
+            U<sub>RS</sub> = {fmt(rz.URS, 3)} V
+          </Num>
+          {t("quiz.q4.p6")}{" "}
+          <Num>
+            I = U<sub>RS</sub>/R
+          </Num>
+          {t("quiz.q4.p7")}
         </p>
       </QA>
 
-      <QA
-        letter="e"
-        question="¿Qué hubiera pasado alimentando el circuito de la Parte B a una frecuencia industrial de 50 Hz?"
-      >
+      <QA letter="e" question={t("quiz.q5.question")}>
         <p>
-          Esta pregunta es hipotética: no se midió a 50 Hz en la Parte B, así
-          que la proyección siguiente es{" "}
-          <strong>
-            teórica, calculada con los elementos R/L/C estimados
-          </strong>{" "}
-          (no medidos) de este ensayo. A 50 Hz estaríamos muy por debajo de f₀
-          ({fmt(f0, 0)} Hz), en zona fuertemente <strong>capacitiva</strong>:{" "}
+          {t("quiz.q5.p1")}{" "}
+          <strong>{t("quiz.q5.strong1")}</strong> {t("quiz.q5.p2")}
+          {fmt(f0, 0)} {t("quiz.q5.p3")} <strong>{t("quiz.q5.strong2")}</strong>
+          {t("quiz.q5.p4")}{" "}
           <Num>
             X<sub>C</sub> = {fmt(r50.XC, 0)} Ω
           </Num>{" "}
-          es enorme frente a{" "}
+          {t("quiz.q5.p5")}{" "}
           <Num>
             X<sub>L</sub> = {fmt(r50.XL, 0)} Ω
           </Num>
-          . La impedancia resulta altísima (
-          <Num>Z = {fmt(r50.Z, 0)} Ω</Num>) y la corriente, ínfima (
-          <Num>I = {fmt(r50.I * 1000, 3)} mA</Num>). El circuito se comporta
-          casi como un capacitor: <Num>φ = {fmt(r50.phiDeg, 1)}°</Num> (la
-          corriente adelanta a la tensión) y prácticamente no hay transferencia
-          de potencia.
+          {t("quiz.q5.p6")}
+          <Num>Z = {fmt(r50.Z, 0)} Ω</Num>
+          {t("quiz.q5.p7")}
+          <Num>I = {fmt(r50.I * 1000, 3)} mA</Num>
+          {t("quiz.q5.p8")}{" "}
+          <Num>φ = {fmt(r50.phiDeg, 1)}°</Num>{" "}
+          {t("quiz.q5.p9")}
         </p>
       </QA>
     </main>

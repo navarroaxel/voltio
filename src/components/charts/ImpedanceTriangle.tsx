@@ -2,6 +2,7 @@
 
 import { useEffect, useRef } from "react";
 import { useUI } from "@/store/ui-store";
+import { useLanguage } from "@/i18n/LanguageContext";
 import type { RLCResult } from "@/lib/types";
 import { fmt } from "@/lib/format";
 
@@ -21,6 +22,7 @@ export function ImpedanceTriangle({
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const wrapRef = useRef<HTMLDivElement>(null);
   const { state } = useUI();
+  const { t, language } = useLanguage();
 
   useEffect(() => {
     const canvas = canvasRef.current;
@@ -49,7 +51,7 @@ export function ImpedanceTriangle({
       ctx.fillStyle = muted;
       ctx.textAlign = "center";
       ctx.textBaseline = "middle";
-      ctx.fillText("Z → ∞ (capacitor abierto)", cssW / 2, cssH / 2);
+      ctx.fillText(t("sim.impedanceTriangle.openCapacitor"), cssW / 2, cssH / 2);
       return;
     }
 
@@ -95,7 +97,11 @@ export function ImpedanceTriangle({
     ctx.fillText(`R = ${fmt(Rtot, 0)} Ω`, 10, 26);
     ctx.fillStyle = X >= 0 ? "#dc2626" : "#16a34a";
     ctx.fillText(
-      `X = ${fmt(X, 0)} Ω (${X >= 0 ? "inductivo" : "capacitivo"})`,
+      `X = ${fmt(X, 0)} Ω (${
+        X >= 0
+          ? t("sim.impedanceTriangle.inductive")
+          : t("sim.impedanceTriangle.capacitive")
+      })`,
       10,
       44,
     );
@@ -104,11 +110,25 @@ export function ImpedanceTriangle({
     ctx.textAlign = "right";
     ctx.textBaseline = "bottom";
     ctx.fillText(`φ = ${fmt(result.phiDeg, 1)}°`, cssW - 10, cssH - 8);
-  }, [result, height, state.theme]);
+  }, [result, height, state.theme, t, language]);
+
+  const ariaLabel =
+    language === "es"
+      ? `Triángulo de impedancia: resistencia total R = ${fmt(result.Rtot, 1)} Ω, ` +
+        `reactancia X = ${fmt(result.X, 1)} Ω, impedancia Z = ${fmt(result.Z, 1)} Ω, ` +
+        `desfasaje φ = ${fmt(result.phiDeg, 1)}°.`
+      : `Impedance triangle: total resistance R = ${fmt(result.Rtot, 1)} Ω, ` +
+        `reactance X = ${fmt(result.X, 1)} Ω, impedance Z = ${fmt(result.Z, 1)} Ω, ` +
+        `phase φ = ${fmt(result.phiDeg, 1)}°.`;
 
   return (
     <div ref={wrapRef} className="w-full">
-      <canvas ref={canvasRef} className="block" />
+      <canvas
+        ref={canvasRef}
+        className="block"
+        role="img"
+        aria-label={ariaLabel}
+      />
     </div>
   );
 }

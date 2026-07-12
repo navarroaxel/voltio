@@ -1,4 +1,10 @@
+"use client";
+
+import { useLanguage } from "@/i18n/LanguageContext";
+
 export function Footer() {
+  const { t } = useLanguage();
+
   return (
     <footer className="mt-8 border-t border-neutral-200 px-4 py-6 text-sm text-neutral-500 sm:px-6 dark:border-neutral-800 dark:text-neutral-400">
       <div className="mx-auto max-w-6xl space-y-2">
@@ -6,18 +12,14 @@ export function Footer() {
           <span className="font-medium text-neutral-700 dark:text-neutral-200">
             Voltio
           </span>{" "}
-          — simuladores interactivos para los trabajos prácticos de{" "}
-          <span className="font-medium">Electrotécnica I</span> de la UTN –
-          FRBA.
+          {t("common.footer.intro_prefix")}{" "}
+          <span className="font-medium">
+            {t("common.footer.intro_subject")}
+          </span>{" "}
+          {t("common.footer.intro_suffix")}
         </p>
-        <p>
-          TP N°1: Resonancia · Cátedra Ing. Carlos Cremaschi · Ciclo lectivo
-          2026.
-        </p>
-        <p className="text-xs">
-          Herramienta de apoyo para el análisis de los ensayos. Los valores
-          medidos son los registrados en el laboratorio.
-        </p>
+        <p>{t("common.footer.course_line")}</p>
+        <p className="text-xs">{t("common.footer.disclaimer")}</p>
       </div>
     </footer>
   );

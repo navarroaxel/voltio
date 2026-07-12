@@ -2,17 +2,19 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { useLanguage } from "@/i18n/LanguageContext";
 
 const LINKS = [
-  { href: "/", label: "Inicio" },
-  { href: "/resonancia", label: "Teoría" },
-  { href: "/resonancia/part-a", label: "Parte A" },
-  { href: "/resonancia/part-b", label: "Parte B" },
-  { href: "/resonancia/questionnaire", label: "Cuestionario" },
+  { href: "/", labelKey: "common.nav.home" },
+  { href: "/resonancia", labelKey: "common.nav.theory" },
+  { href: "/resonancia/part-a", labelKey: "common.nav.partA" },
+  { href: "/resonancia/part-b", labelKey: "common.nav.partB" },
+  { href: "/resonancia/questionnaire", labelKey: "common.nav.quiz" },
 ] as const;
 
 export function Nav() {
   const pathname = usePathname();
+  const { t } = useLanguage();
 
   return (
     <nav className="flex flex-wrap items-center gap-1">
@@ -29,7 +31,7 @@ export function Nav() {
                 : "rounded-lg px-3 py-1.5 text-sm font-medium text-neutral-600 transition-colors hover:bg-neutral-100 dark:text-neutral-300 dark:hover:bg-neutral-800"
             }
           >
-            {link.label}
+            {t(link.labelKey)}
           </Link>
         );
       })}

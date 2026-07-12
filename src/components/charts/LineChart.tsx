@@ -2,6 +2,7 @@
 
 import { useEffect, useRef } from "react";
 import { useUI } from "@/store/ui-store";
+import { useLanguage } from "@/i18n/LanguageContext";
 import { fmt } from "@/lib/format";
 import { renderSub } from "@/components/ui/Sub";
 
@@ -53,6 +54,7 @@ export function LineChart({
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const wrapRef = useRef<HTMLDivElement>(null);
   const { state } = useUI();
+  const { t, language } = useLanguage();
 
   useEffect(() => {
     const canvas = canvasRef.current;
@@ -202,10 +204,33 @@ export function LineChart({
     state.theme,
   ]);
 
+  // Text alternative: axes + each series' value range (the exact numbers
+  // also live in the data table next to every chart).
+  const seriesSummary = series
+    .filter((s) => s.points.length > 0)
+    .map((s) => {
+      const ys = s.points.map((p) => p.y);
+      const lo = Math.min(...ys);
+      const hi = Math.max(...ys);
+      const name = s.label.replace(/_/g, "");
+      const meas = s.kind === "scatter" ? t("sim.chart.measuredSuffix") : "";
+      return `${name}${meas}: ${fmt(lo, yDecimals)}–${fmt(hi, yDecimals)}`;
+    })
+    .join("; ");
+  const ariaLabel =
+    (language === "es"
+      ? `Gráfico de ${yLabel} en función de ${xLabel}. `
+      : `Chart of ${yLabel} versus ${xLabel}. `) + seriesSummary;
+
   return (
     <div>
       <div ref={wrapRef} className="w-full">
-        <canvas ref={canvasRef} className="block" />
+        <canvas
+          ref={canvasRef}
+          className="block"
+          role="img"
+          aria-label={ariaLabel}
+        />
       </div>
       <div className="mt-2 flex flex-wrap justify-center gap-x-4 gap-y-1">
         {series.map((s, i) => (
@@ -218,7 +243,7 @@ export function LineChart({
               style={{ backgroundColor: s.color }}
             />
             {renderSub(s.label)}
-            {s.kind === "scatter" ? " (medido)" : ""}
+            {s.kind === "scatter" ? t("sim.chart.measuredSuffix") : ""}
           </span>
         ))}
       </div>

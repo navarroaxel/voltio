@@ -19,6 +19,7 @@ import {
   PART_B_RESONANCE,
 } from "@/lib/measured-data";
 import { fmt } from "@/lib/format";
+import { useLanguage } from "@/i18n/LanguageContext";
 
 const COL = {
   UR: "#2563eb",
@@ -32,6 +33,7 @@ const COL = {
 };
 
 export default function PartBPage() {
+  const { t } = useLanguage();
   const { state, dispatch } = usePartB();
   const { fIndex, chartTab } = state;
 
@@ -70,21 +72,22 @@ export default function PartBPage() {
     { label: "U_L", value: fmt(result.UL, 1), unit: "V", accent: "red" },
     { label: "U_C", value: fmt(result.UC, 1), unit: "V", accent: "green" },
     { label: "cos φ", value: fmt(result.fp, 3) },
-    { label: "Q (mérito)", value: fmt(result.Qfactor, 1) },
+    { label: t("partb.metric.q"), value: fmt(result.Qfactor, 1) },
   ];
 
   return (
     <main className="mx-auto max-w-6xl space-y-5 px-4 py-8 sm:px-6">
       <header>
         <p className="text-xs font-semibold tracking-wide text-blue-600 uppercase">
-          TP N°1 · Parte B
+          {t("partb.kicker")}
         </p>
         <h1 className="mt-1 text-2xl font-bold tracking-tight">
-          RLC serie — se varía la frecuencia f
+          {t("partb.title")}
         </h1>
         <p className="mt-2 text-sm text-neutral-600 dark:text-neutral-300">
-          Fuente GAF a tensión senoidal constante (≈{fmt(PART_B.U, 0)} V).
-          Resonancia teórica en <strong>f₀ ≈ {fmt(PART_B_F0, 0)} Hz</strong>.
+          {t("partb.subtitle.source")} (≈{fmt(PART_B.U, 0)} V).{" "}
+          {t("partb.subtitle.resonance")}{" "}
+          <strong>f₀ ≈ {fmt(PART_B_F0, 0)} Hz</strong>.
         </p>
       </header>
 
@@ -94,45 +97,41 @@ export default function PartBPage() {
 
       {PART_B_ESTIMATED && (
         <div className="rounded-xl border border-amber-300 bg-amber-50 p-4 text-sm text-amber-900 dark:border-amber-800 dark:bg-amber-950/40 dark:text-amber-200">
-          <strong>Nota:</strong> el enunciado no fija los valores de R, L y C
-          de este ensayo. Los usados aquí (R&nbsp;=&nbsp;{PART_B.R}&nbsp;Ω,
-          L&nbsp;=&nbsp;{fmt(PART_B.L, 2)}&nbsp;H, C&nbsp;=&nbsp;
+          <strong>{t("partb.note.label")}</strong> {t("partb.note.text1")}
+          R&nbsp;=&nbsp;{PART_B.R}&nbsp;Ω, L&nbsp;=&nbsp;{fmt(PART_B.L, 2)}
+          &nbsp;H, C&nbsp;=&nbsp;
           {fmt(PART_B.C, 1)}&nbsp;µF, R<sub>L</sub>&nbsp;=&nbsp;{PART_B.RL}
-          &nbsp;Ω)
-          son <strong>estimados</strong> a partir de la curva medida
-          (reproducen f₀ y Q). Reemplazar por los valores reales registrados
-          por el grupo. La tensión de fuente medida cae en resonancia
-          (impedancia interna del GAF), por eso la teoría con U constante
-          queda por encima del pico medido.
+          &nbsp;Ω{t("partb.note.text2")} <strong>{t("partb.note.estimated")}</strong>{" "}
+          {t("partb.note.text3")}
         </div>
       )}
 
       <div className="grid grid-cols-1 gap-5 lg:grid-cols-2">
         <div className="space-y-5">
-          <Card title={`Punto de medición · ${condition}`}>
+          <Card title={`${t("partb.card.point")} · ${condition}`}>
             <PointSelector
               count={PART_B_MEASURED.length}
               index={fIndex}
               onChange={(i) => dispatch({ type: "SET_F_INDEX", index: i })}
               label={`f = ${fmt(row.f, 0)} Hz`}
-              hint={`medición N°${row.n}`}
+              hint={`${t("partb.hint.measurement")}${row.n}`}
             />
             <div className="mt-4">
               <MetricsGrid metrics={metrics} />
             </div>
           </Card>
 
-          <Card title="Diagrama fasorial (tensiones)">
+          <Card title={t("partb.card.phasor")}>
             <PhasorDiagram result={result} />
           </Card>
 
-          <Card title="Diagrama de impedancia">
+          <Card title={t("partb.card.impedance")}>
             <ImpedanceTriangle result={result} />
           </Card>
         </div>
 
         <div className="space-y-5">
-          <Card title="Gráficos en función de f">
+          <Card title={t("partb.card.charts")}>
             <ChartTabs
               tabs={[
                 { key: "voltages", label: "U_R, U_L, U_C" },
@@ -146,7 +145,7 @@ export default function PartBPage() {
               {chartTab === "voltages" && (
                 <LineChart
                   xLabel="f (Hz)"
-                  yLabel="Tensión (V)"
+                  yLabel={t("partb.chart.voltage_label")}
                   markers={[marker]}
                   series={[
                     line(
@@ -262,10 +261,10 @@ export default function PartBPage() {
             </div>
           </Card>
 
-          <Card title="Tabla: medidos + calculados">
+          <Card title={t("partb.card.table")}>
             <DataTable
               columns={[
-                { label: "N°" },
+                { label: t("partb.col.no") },
                 { label: "f", sub: "Hz" },
                 { label: "U", sub: "V" },
                 { label: "U_R", sub: "V" },
@@ -288,31 +287,35 @@ export default function PartBPage() {
             />
           </Card>
 
-          <Card title="Conclusiones (medido)">
+          <Card title={t("partb.card.conclusions")}>
             <p className="text-sm text-neutral-600 dark:text-neutral-300">
-              Resonancia en la medición N°{rz.n} ≈ {fmt(rz.f, 0)} Hz: U_RS
-              máxima ({fmt(rz.URS, 3)} V) y U<sub>L</sub> ≈ U<sub>C</sub> (
-              {fmt(rz.UL, 2)} / {fmt(rz.UC, 2)} V).
+              {t("partb.concl1.prefix")}
+              {rz.n} ≈ {fmt(rz.f, 0)} Hz: U_RS {t("partb.concl1.max")} (
+              {fmt(rz.URS, 3)} V) {t("partb.concl1.and")} U<sub>L</sub> ≈ U
+              <sub>C</sub> ({fmt(rz.UL, 2)} / {fmt(rz.UC, 2)} V).
             </p>
             <p className="mt-2 text-sm text-neutral-600 dark:text-neutral-300">
-              <strong>Sobretensión:</strong> U<sub>L</sub> y U<sub>C</sub> (~
-              {fmt(rz.UL, 0)} V) muy por encima de la fuente (~{fmt(rz.U, 1)}{" "}
-              V) → factor de mérito Q ≈ {fmt(rz.UL / rz.U, 1)} (= U
+              <strong>{t("partb.concl2.label")}</strong> U<sub>L</sub>{" "}
+              {t("partb.concl1.and")} U<sub>C</sub> (~
+              {fmt(rz.UL, 0)} V) {t("partb.concl2.above")}
+              {fmt(rz.U, 1)} V) → {t("partb.concl2.qlabel")} Q ≈{" "}
+              {fmt(rz.UL / rz.U, 1)} (= U
               <sub>L</sub>/U).
             </p>
             <p className="mt-2 text-sm text-neutral-600 dark:text-neutral-300">
-              <strong>Doble lectura de Q:</strong> respecto a la fuente Q = U
-              <sub>L</sub>/U ≈ {fmt(rz.UL / rz.U, 1)}; respecto a la R externa
-              Q = U<sub>C</sub>/U_RS ≈ {fmt(rz.UC / rz.URS, 1)}. La diferencia
-              revela la resistencia interna de la bobina R<sub>L</sub> (el
-              exceso U − U_RS ≈ {fmt(rz.U - rz.URS, 2)} V cae en R
+              <strong>{t("partb.concl3.label")}</strong>{" "}
+              {t("partb.concl3.wrtSource")} U
+              <sub>L</sub>/U ≈ {fmt(rz.UL / rz.U, 1)};{" "}
+              {t("partb.concl3.wrtR")} U<sub>C</sub>/U_RS ≈{" "}
+              {fmt(rz.UC / rz.URS, 1)}. {t("partb.concl3.reveals")} R
+              <sub>L</sub> ({t("partb.concl3.excess")} U − U_RS ≈{" "}
+              {fmt(rz.U - rz.URS, 2)} V {t("partb.concl3.fallsOn")} R
               <sub>L</sub>).
             </p>
             <p className="mt-2 text-sm text-neutral-600 dark:text-neutral-300">
-              <strong>Caída de fuente:</strong> la tensión medida baja de ~4 V
-              a {fmt(rz.U, 2)} V en resonancia por la impedancia interna del
-              GAF (no es error); por eso la curva teórica con U constante
-              queda por encima del pico medido.
+              <strong>{t("partb.concl4.label")}</strong>{" "}
+              {t("partb.concl4.text1")} {fmt(rz.U, 2)} V{" "}
+              {t("partb.concl4.text2")}
             </p>
           </Card>
         </div>
