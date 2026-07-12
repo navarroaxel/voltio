@@ -4,6 +4,7 @@ import { UIProvider } from "@/store/ui-store";
 import { Header } from "@/components/ui/Header";
 import { Footer } from "@/components/ui/Footer";
 import "./globals.css";
+import { Analytics } from "@vercel/analytics/next";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -51,6 +52,7 @@ export default function RootLayout({
           <div className="flex-1">{children}</div>
           <Footer />
         </UIProvider>
+        <Analytics />
       </body>
     </html>
   );
