@@ -14,13 +14,14 @@ import * as parta from "./dict/parta";
 import * as partb from "./dict/partb";
 import * as quiz from "./dict/quiz";
 import * as sim from "./dict/sim";
+import * as acoplados from "./dict/acoplados";
 
 export type Language = "es" | "en";
 
 const STORAGE_KEY = "language";
 const STORE_EVENT = "voltio:language-change";
 
-const modules = [common, home, theory, parta, partb, quiz, sim];
+const modules = [common, home, theory, parta, partb, quiz, sim, acoplados];
 
 const translations: Record<Language, Record<string, string>> = {
   es: Object.assign({}, ...modules.map((m) => m.es)),
