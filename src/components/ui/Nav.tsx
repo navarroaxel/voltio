@@ -4,21 +4,34 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useLanguage } from "@/i18n/LanguageContext";
 
-const LINKS = [
-  { href: "/", labelKey: "common.nav.home" },
-  { href: "/resonancia", labelKey: "common.nav.theory" },
-  { href: "/resonancia/part-a", labelKey: "common.nav.partA" },
-  { href: "/resonancia/part-b", labelKey: "common.nav.partB" },
-  { href: "/resonancia/questionnaire", labelKey: "common.nav.quiz" },
-] as const;
+const HOME_LINK = { href: "/", labelKey: "common.nav.home" } as const;
+
+const GROUPS: Record<string, { href: string; labelKey: string }[]> = {
+  "/resonancia": [
+    { href: "/resonancia", labelKey: "common.nav.theory" },
+    { href: "/resonancia/part-a", labelKey: "common.nav.partA" },
+    { href: "/resonancia/part-b", labelKey: "common.nav.partB" },
+    { href: "/resonancia/questionnaire", labelKey: "common.nav.quiz" },
+  ],
+  "/circuitos-acoplados": [
+    { href: "/circuitos-acoplados", labelKey: "common.nav.theory" },
+    { href: "/circuitos-acoplados/part-a", labelKey: "common.nav.partA" },
+    { href: "/circuitos-acoplados/part-b", labelKey: "common.nav.partB" },
+  ],
+};
 
 export function Nav() {
   const pathname = usePathname();
   const { t } = useLanguage();
 
+  const activeGroup = Object.keys(GROUPS).find((base) =>
+    pathname?.startsWith(base),
+  );
+  const links = [HOME_LINK, ...(activeGroup ? GROUPS[activeGroup] : [])];
+
   return (
     <nav className="flex flex-wrap items-center gap-1">
-      {LINKS.map((link) => {
+      {links.map((link) => {
         const active = pathname === link.href;
         return (
           <Link

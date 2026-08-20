@@ -23,7 +23,8 @@ const TPS: TPCard[] = [
     n: 2,
     titleKey: "home.tp2.title",
     descKey: "home.tp2.desc",
-    status: "próximamente",
+    href: "/circuitos-acoplados",
+    status: "activo",
   },
   {
     n: 3,
