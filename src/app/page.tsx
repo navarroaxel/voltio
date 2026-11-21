@@ -30,7 +30,8 @@ const TPS: TPCard[] = [
     n: 3,
     titleKey: "home.tp3.title",
     descKey: "home.tp3.desc",
-    status: "próximamente",
+    href: "/trifasica",
+    status: "activo",
   },
   {
     n: 4,

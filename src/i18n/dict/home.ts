@@ -13,7 +13,7 @@ export const es: Record<string, string> = {
     "Transformador monofásico: inductancias propias y mutuas, coeficiente de acoplamiento y bornes homólogos.",
   "home.tp3.title": "Sistemas trifásicos",
   "home.tp3.desc":
-    "Cargas en estrella y triángulo, tensiones y corrientes de línea y de fase.",
+    "Carga en estrella con y sin neutro, equilibrada y desequilibrada: diagramas fasoriales, punto estrella y método de Aron.",
   "home.tp4.title": "Régimen poliarmónico",
   "home.tp4.desc":
     "Corrientes de cargas lineales y alineales, neutro en trifásico y un simulador de interferencias de la red.",
@@ -34,7 +34,7 @@ export const en: Record<string, string> = {
     "Single-phase transformer: self and mutual inductances, coupling coefficient, and homologous terminals.",
   "home.tp3.title": "Three-phase systems",
   "home.tp3.desc":
-    "Star and delta loads, line and phase voltages and currents.",
+    "Star load with and without neutral, balanced and unbalanced: phasor diagrams, star point and Aron's method.",
   "home.tp4.title": "Polyharmonic regime",
   "home.tp4.desc":
     "Currents of linear and non-linear loads, three-phase neutral, and a grid interference simulator.",

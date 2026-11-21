@@ -13,6 +13,10 @@ Plataforma de Trabajos Prácticos de **Electrotécnica I (UTN FRBA)**. App [Next
 | `/resonancia/part-a`        | Parte A: RLC serie, se varía C (50 Hz)   | activo |
 | `/resonancia/part-b`        | Parte B: RLC serie, se varía la f (GAF)  | activo |
 | `/resonancia/questionnaire` | Cuestionario (5 preguntas con análisis)  | activo |
+| `/trifasica`                | TP3 Circuitos trifásicos — teoría + objetivos | activo |
+| `/trifasica/ensayos`        | Ensayos medidos en estrella, diagramas fasoriales, comparación con el modelo | activo |
+| `/trifasica/simulador`      | Simulador del punto estrella y el neutro (capacitor o inductor en la fase S) | activo |
+| `/trifasica/cuestionario`   | Cuestionario de la guía (4 preguntas) | activo |
 | `/poliarmonicas`            | TP4 Régimen poliarmónico — teoría + objetivos | activo |
 | `/poliarmonicas/ensayos`    | Visor de ensayos medidos (capturas del Fluke) | activo |
 | `/poliarmonicas/simulador`  | Simulador de interferencias de la red | activo |
