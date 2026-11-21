@@ -15,13 +15,24 @@ import * as partb from "./dict/partb";
 import * as quiz from "./dict/quiz";
 import * as sim from "./dict/sim";
 import * as acoplados from "./dict/acoplados";
+import * as poliarmonicas from "./dict/poliarmonicas";
 
 export type Language = "es" | "en";
 
 const STORAGE_KEY = "language";
 const STORE_EVENT = "voltio:language-change";
 
-const modules = [common, home, theory, parta, partb, quiz, sim, acoplados];
+const modules = [
+  common,
+  home,
+  theory,
+  parta,
+  partb,
+  quiz,
+  sim,
+  acoplados,
+  poliarmonicas,
+];
 
 const translations: Record<Language, Record<string, string>> = {
   es: Object.assign({}, ...modules.map((m) => m.es)),

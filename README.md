@@ -13,8 +13,11 @@ Coursework platform for **Electrotécnica I (UTN FRBA)**. A fully client-side [N
 | `/resonancia/part-a`        | Part A: series RLC, sweeping C (50 Hz)        | active |
 | `/resonancia/part-b`        | Part B: series RLC, sweeping frequency (GAF)  | active |
 | `/resonancia/questionnaire` | Questionnaire (5 questions with analysis)     | active |
+| `/poliarmonicas`            | TP4 Polyharmonic regime — theory + objectives | active |
+| `/poliarmonicas/ensayos`    | Measured tests viewer (Fluke captures) | active |
+| `/poliarmonicas/simulador`  | Grid-interference simulator | active |
 
-Upcoming assignments (three-phase, polyharmonic, coupled circuits) are added as new routes (`/trifasica/...`, etc.).
+Upcoming assignments (three-phase) are added as new routes (`/trifasica/...`, etc.).
 
 ## Stack
 

@@ -10,7 +10,7 @@ interface DataTableProps {
   columns: Column[];
   rows: React.ReactNode[][];
   highlightRow?: number;
-  caption?: string;
+  caption?: React.ReactNode;
 }
 
 export function DataTable({

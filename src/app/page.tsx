@@ -36,7 +36,8 @@ const TPS: TPCard[] = [
     n: 4,
     titleKey: "home.tp4.title",
     descKey: "home.tp4.desc",
-    status: "próximamente",
+    href: "/poliarmonicas",
+    status: "activo",
   },
 ];
 
