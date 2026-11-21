@@ -3,7 +3,7 @@
 import { Card } from "@/components/ui/Card";
 import { TransformerSchematic } from "@/components/sim/TransformerSchematic";
 import { NumberField } from "@/components/sim/NumberField";
-import { useCircuitosB, num, type Method } from "@/store/circuitos-b-store";
+import { useCircuitosB, num, parseReading, type Method } from "@/store/circuitos-b-store";
 import { homologousByCurrent, homologousByVoltage } from "@/lib/transformer-engine";
 import { fmt } from "@/lib/format";
 import { useLanguage } from "@/i18n/LanguageContext";
@@ -198,12 +198,12 @@ function ACVoltmeterMethod() {
   const connI = homologousByVoltage(
     num(state.connI_U1),
     num(state.connI_U2),
-    num(state.connI_U3),
+    parseReading(state.connI_U3),
   );
   const connII = homologousByVoltage(
     num(state.connII_U1),
     num(state.connII_U2),
-    num(state.connII_U3),
+    parseReading(state.connII_U3),
   );
 
   return (

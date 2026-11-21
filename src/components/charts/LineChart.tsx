@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useUI } from "@/store/ui-store";
 import { useLanguage } from "@/i18n/LanguageContext";
 import { fmt } from "@/lib/format";
@@ -55,6 +55,17 @@ export function LineChart({
   const wrapRef = useRef<HTMLDivElement>(null);
   const { state } = useUI();
   const { t, language } = useLanguage();
+  // Ancho disponible: se vuelve a medir al redimensionar (p. ej. rotar el
+  // teléfono) para que el gráfico nunca desborde su tarjeta.
+  const [width, setWidth] = useState(0);
+
+  useEffect(() => {
+    const wrap = wrapRef.current;
+    if (!wrap) return;
+    const ro = new ResizeObserver(() => setWidth(Math.round(wrap.clientWidth)));
+    ro.observe(wrap);
+    return () => ro.disconnect();
+  }, []);
 
   useEffect(() => {
     const canvas = canvasRef.current;
@@ -73,7 +84,8 @@ export function LineChart({
     const dpr = window.devicePixelRatio || 1;
     canvas.width = Math.round(cssW * dpr);
     canvas.height = Math.round(cssH * dpr);
-    canvas.style.width = `${cssW}px`;
+    // 100 % (no px fijos) para que el canvas no fuerce el ancho de la tarjeta.
+    canvas.style.width = "100%";
     canvas.style.height = `${cssH}px`;
     ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
     ctx.clearRect(0, 0, cssW, cssH);
@@ -202,6 +214,7 @@ export function LineChart({
     yDecimals,
     xDecimals,
     state.theme,
+    width,
   ]);
 
   // Text alternative: axes + each series' value range (the exact numbers

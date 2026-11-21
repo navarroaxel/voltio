@@ -18,6 +18,11 @@ const GROUPS: Record<string, { href: string; labelKey: string }[]> = {
     { href: "/circuitos-acoplados/part-a", labelKey: "common.nav.partA" },
     { href: "/circuitos-acoplados/part-b", labelKey: "common.nav.partB" },
   ],
+  "/poliarmonicas": [
+    { href: "/poliarmonicas", labelKey: "common.nav.theory" },
+    { href: "/poliarmonicas/ensayos", labelKey: "poli.nav.ensayos" },
+    { href: "/poliarmonicas/simulador", labelKey: "poli.nav.simulador" },
+  ],
 };
 
 export function Nav() {

@@ -16,7 +16,7 @@ export const es: Record<string, string> = {
     "Cargas en estrella y triángulo, tensiones y corrientes de línea y de fase.",
   "home.tp4.title": "Régimen poliarmónico",
   "home.tp4.desc":
-    "Análisis de señales no senoidales y descomposición en armónicas.",
+    "Corrientes de cargas lineales y alineales, neutro en trifásico y un simulador de interferencias de la red.",
 };
 
 export const en: Record<string, string> = {
@@ -37,5 +37,5 @@ export const en: Record<string, string> = {
     "Star and delta loads, line and phase voltages and currents.",
   "home.tp4.title": "Polyharmonic regime",
   "home.tp4.desc":
-    "Analysis of non-sinusoidal signals and decomposition into harmonics.",
+    "Currents of linear and non-linear loads, three-phase neutral, and a grid interference simulator.",
 };

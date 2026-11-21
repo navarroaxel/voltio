@@ -101,9 +101,11 @@ export function homologousByCurrent(
 export function homologousByVoltage(
   U1: number,
   U2: number,
-  U3: number,
+  U3: number | null,
 ): HomologousByVoltageResult {
-  if (!(U1 > 0) || !(U2 > 0) || !(U3 > 0)) {
+  // U3 = 0 is a valid reading (U1 = U2 in phase cancel exactly); only a
+  // missing reading (null) is pending.
+  if (!(U1 > 0) || !(U2 > 0) || U3 === null || !(U3 >= 0)) {
     return { homologous: null, diff: NaN, sum: NaN };
   }
   const diff = Math.abs(U1 - U2);

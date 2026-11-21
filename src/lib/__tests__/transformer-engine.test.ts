@@ -68,6 +68,10 @@ describe("homologousByVoltage", () => {
   it("picks homologous when U3 ≈ |U1−U2| and not when U3 ≈ U1+U2", () => {
     expect(homologousByVoltage(110, 63.5, 46.5).homologous).toBe(true);
     expect(homologousByVoltage(110, 63.5, 173.5).homologous).toBe(false);
-    expect(homologousByVoltage(110, 63.5, 0).homologous).toBeNull();
+    expect(homologousByVoltage(110, 63.5, null).homologous).toBeNull();
+  });
+
+  it("accepts a measured U3 = 0 when U1 = U2 (in-phase voltages cancel)", () => {
+    expect(homologousByVoltage(63.5, 63.5, 0).homologous).toBe(true);
   });
 });
