@@ -264,7 +264,7 @@ export const en: Record<string, string> = {
     "Case 1 — If I(Connection II) < I(Connection I), the series is additive in Connection II, and the terminals bridged in Connection I are homologous.",
   "acopl.partb.acAmmeter.case2":
     "Case 2 — If I(Connection II) > I(Connection I), the series is subtractive in Connection II, and the terminals bridged in Connection II are homologous.",
-  "acopl.partb.acAmmeter.result.prefix": "With these readings, the bridged terminals in",
+  "acopl.partb.acAmmeter.result.prefix": "With these readings, the homologous terminals are the ones bridged in",
   "acopl.partb.acAmmeter.pending": "Enter both currents to determine the result.",
   "acopl.partb.acAmmeter.tie": "The currents are equal (or data is missing): can't be determined.",
 

@@ -208,7 +208,8 @@ export const es: Record<string, string> = {
   "poli.sim.tubosC.none": "Sin compensar",
   "poli.sim.tubosC.c1": "Como TC1",
   "poli.sim.tubosC.c2": "Como TC2",
-  "poli.sim.tubosC.custom": "Personalizado",
+  "poli.sim.tubosC.custom": "Valor personalizado (no coincide con TC1 ni TC2)",
+  "poli.chart.spectrum.aria": "Espectro de armónicas. Mayores componentes: ",
   "poli.sim.grid.title": "Tensión de red",
   "poli.sim.grid.V1": "Tensión fundamental U₁",
   "poli.sim.grid.v3": "3.ª armónica",
@@ -250,7 +251,7 @@ export const es: Record<string, string> = {
   "poli.sim.cmp.simulated": "Simulado",
   "poli.sim.cmp.ref": "Ensayo de referencia",
   "poli.sim.cmp.note":
-    "El THD medido es una estimación (I_RMS e I₁ de la misma pantalla). El neutro simulado no se ajustó: la calibración sólo usó I_RMS, I₁ y φ₁ de la lectura monofásica.",
+    "El THD estimado se calcula con I_RMS e I₁ de la misma pantalla. El neutro simulado no se ajustó: la calibración sólo usó I_RMS, I₁ y φ₁ de la lectura monofásica.",
   "poli.sim.model.title": "Modelo de la carga seleccionada",
   "poli.sim.model.halogena":
     "R = U/I de la captura AHM1. Lineal: no genera armónicas.",
@@ -497,7 +498,8 @@ export const en: Record<string, string> = {
   "poli.sim.tubosC.none": "Uncompensated",
   "poli.sim.tubosC.c1": "Like TC1",
   "poli.sim.tubosC.c2": "Like TC2",
-  "poli.sim.tubosC.custom": "Custom",
+  "poli.sim.tubosC.custom": "Custom value (matches neither TC1 nor TC2)",
+  "poli.chart.spectrum.aria": "Harmonic spectrum. Largest components: ",
   "poli.sim.grid.title": "Grid voltage",
   "poli.sim.grid.V1": "Fundamental voltage U₁",
   "poli.sim.grid.v3": "3rd harmonic",
@@ -539,7 +541,7 @@ export const en: Record<string, string> = {
   "poli.sim.cmp.simulated": "Simulated",
   "poli.sim.cmp.ref": "Reference test",
   "poli.sim.cmp.note":
-    "The measured THD is an estimate (I_RMS and I₁ from the same screen). The simulated neutral was not fitted: calibration only used I_RMS, I₁ and φ₁ from the single-phase reading.",
+    "The estimated THD is computed from I_RMS and I₁ on the same screen. The simulated neutral was not fitted: calibration only used I_RMS, I₁ and φ₁ from the single-phase reading.",
   "poli.sim.model.title": "Model of the selected load",
   "poli.sim.model.halogena":
     "R = U/I from capture AHM1. Linear: generates no harmonics.",

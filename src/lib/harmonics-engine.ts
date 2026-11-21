@@ -218,6 +218,7 @@ function dft(x: ArrayLike<number>, start: number, order: number) {
 export function analyze(i: ArrayLike<number>, v: ArrayLike<number>): Analysis {
   const N = SAMPLES_PER_CYCLE;
   const start = i.length - N;
+  let sumI = 0;
   let sumI2 = 0;
   let sumV2 = 0;
   let sumP = 0;
@@ -225,6 +226,7 @@ export function analyze(i: ArrayLike<number>, v: ArrayLike<number>): Analysis {
   for (let k = 0; k < N; k++) {
     const ik = i[start + k];
     const vk = v[start + k];
+    sumI += ik;
     sumI2 += ik * ik;
     sumV2 += vk * vk;
     sumP += ik * vk;
@@ -248,7 +250,10 @@ export function analyze(i: ArrayLike<number>, v: ArrayLike<number>): Analysis {
   while (phi <= -180) phi += 360;
 
   const I1 = spectrum[0];
-  const harm = Math.sqrt(spectrum.slice(1).reduce((s, x) => s + x * x, 0));
+  // Harmonic content from all sampled energy (not just the plotted orders
+  // ≤ MAX_ORDER): I_RMS² = I_dc² + I₁² + Σ_{h≥2} I_h².
+  const mean = sumI / N;
+  const harm = Math.sqrt(Math.max(0, Irms * Irms - mean * mean - I1 * I1));
   return {
     Irms,
     I1,

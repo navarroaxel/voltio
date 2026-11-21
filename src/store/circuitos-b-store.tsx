@@ -86,8 +86,4 @@ export function useCircuitosB() {
   return ctx;
 }
 
-/** Parses a field, returning 0 for blank/invalid input (never NaN). */
-export function num(value: string): number {
-  const n = parseFloat(value.replace(",", "."));
-  return Number.isFinite(n) ? n : 0;
-}
+export { num, parseReading } from "@/lib/parse-number";

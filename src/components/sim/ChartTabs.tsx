@@ -30,6 +30,7 @@ export function ChartTabs<T extends string>({
   label,
   getPanelId,
 }: ChartTabsProps<T>) {
+  const hasActive = tabs.some((tab) => tab.key === active);
   const btnRefs = useRef<(HTMLButtonElement | null)[]>([]);
 
   function focusTab(index: number) {
@@ -83,7 +84,7 @@ export function ChartTabs<T extends string>({
             id={panelId ? `${panelId}-tab` : undefined}
             aria-selected={isActive}
             aria-controls={panelId}
-            tabIndex={isActive ? 0 : -1}
+            tabIndex={isActive || (!hasActive && index === 0) ? 0 : -1}
             onClick={() => onChange(tab.key)}
             onKeyDown={(e) => handleKeyDown(e, index)}
             className={

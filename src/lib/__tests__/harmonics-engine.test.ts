@@ -17,6 +17,8 @@ import {
   neutralRatio,
   TUBOS_C1_UF,
   TUBOS_C2_UF,
+  tubosPreset,
+  measuredReference,
 } from "../poliarmonicas-data";
 
 const sine = (V1: number): GridVoltage => ({ V1, harmonics: [] });
@@ -233,5 +235,26 @@ describe("THD medido (registro de un compañero)", () => {
   it("no inventa THD para ensayos sin dato (TC2)", () => {
     expect(THD_MEASURED.CTC2).toBeUndefined();
     expect(ENSAYOS.filter((e) => !(e.id in THD_MEASURED)).map((e) => e.id)).toEqual(["CTC2"]);
+  });
+});
+
+describe("THD con armónicas fuera del espectro graficado", () => {
+  it("una 27.ª armónica de tensión (> orden 25) cuenta en el THD de una carga resistiva", () => {
+    const grid: GridVoltage = {
+      V1: 230,
+      harmonics: [{ order: 27, relative: 0.1, phaseDeg: 0 }],
+    };
+    const r = run("halogena", grid);
+    expect(r.thdI).toBeCloseTo(0.1, 3);
+  });
+});
+
+describe("preselección de capacitor de los tubos", () => {
+  it("una sola tolerancia para la pestaña y la referencia medida", () => {
+    expect(tubosPreset(0)).toBe("none");
+    expect(tubosPreset(TUBOS_C1_UF)).toBe("c1");
+    expect(tubosPreset(15.8)).toBe("c2");
+    expect(tubosPreset(11)).toBe("custom");
+    expect(measuredReference("tubos", "mono", 15.8)?.id).toBe("CTC2");
   });
 });

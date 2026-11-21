@@ -34,7 +34,7 @@ export function SpectrumChart({
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const wrapRef = useRef<HTMLDivElement>(null);
   const { state } = useUI();
-  const { language } = useLanguage();
+  const { t } = useLanguage();
   // Ancho disponible: se vuelve a medir al redimensionar (p. ej. rotar el
   // teléfono) para que el gráfico nunca desborde su tarjeta.
   const [width, setWidth] = useState(0);
@@ -155,10 +155,7 @@ export function SpectrumChart({
       return `${s.label.replace(/_/g, "")}: ${top || "—"}`;
     })
     .join("; ");
-  const ariaLabel =
-    (language === "es"
-      ? `Espectro de armónicas. Mayores componentes: `
-      : `Harmonic spectrum. Largest components: `) + summary;
+  const ariaLabel = t("poli.chart.spectrum.aria") + summary;
 
   return (
     <div>

@@ -22,6 +22,8 @@ import {
   THD_MEASURED,
   TUBOS_C1_UF,
   TUBOS_C2_UF,
+  tubosPreset,
+  type TubosPreset,
   TUBOS_C_MAX_UF,
   type LoadKey,
 } from "@/lib/poliarmonicas-data";
@@ -31,7 +33,7 @@ import { renderSub } from "@/components/ui/Sub";
 
 const CONNECTIONS: Connection[] = ["mono", "bifasica", "trifasica"];
 const PRESETS = ["ideal", "dia", "distorsionada"] as const;
-type TubosKey = "none" | "c1" | "c2" | "custom";
+type TubosKey = TubosPreset;
 const DRAW_STEP = 4; // submuestreo para los gráficos temporales
 
 export default function SimuladorPage() {
@@ -132,14 +134,7 @@ export default function SimuladorPage() {
       ]
     : null;
 
-  const tubosKey: TubosKey =
-    state.tubosC === 0
-      ? "none"
-      : Math.abs(state.tubosC - TUBOS_C1_UF) < 0.05
-        ? "c1"
-        : Math.abs(state.tubosC - TUBOS_C2_UF) < 0.05
-          ? "c2"
-          : "custom";
+  const tubosKey: TubosKey = tubosPreset(state.tubosC);
 
   return (
     <main className="mx-auto max-w-6xl space-y-5 px-4 py-8 sm:px-6">
@@ -189,7 +184,6 @@ export default function SimuladorPage() {
                     { key: "none", label: t("poli.sim.tubosC.none") },
                     { key: "c1", label: t("poli.sim.tubosC.c1") },
                     { key: "c2", label: t("poli.sim.tubosC.c2") },
-                    { key: "custom", label: t("poli.sim.tubosC.custom") },
                   ]}
                   active={tubosKey}
                   label={t("poli.sim.tubosC")}
@@ -201,6 +195,11 @@ export default function SimuladorPage() {
                       dispatch({ type: "SET_TUBOS_C", value: TUBOS_C2_UF });
                   }}
                 />
+                {tubosKey === "custom" ? (
+                  <p className="text-xs text-neutral-500 dark:text-neutral-400">
+                    {t("poli.sim.tubosC.custom")}
+                  </p>
+                ) : null}
                 <SliderField
                   label={t("poli.sim.tubosC")}
                   unit="µF"

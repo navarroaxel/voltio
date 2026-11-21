@@ -254,6 +254,19 @@ function capacitorForTarget(target: Ensayo): number {
 /** Capacitores equivalentes de las dos condiciones compensadas (µF). */
 export const TUBOS_C1_UF = capacitorForTarget(ensayoById("CTC1")!) * 1e6;
 export const TUBOS_C2_UF = capacitorForTarget(ensayoById("CTC2")!) * 1e6;
+
+/** The slider moves in 0,1 µF steps, so a value within half a step of a preset is that preset. */
+const TUBOS_PRESET_TOL_UF = 0.05;
+
+export type TubosPreset = "none" | "c1" | "c2" | "custom";
+
+/** Which measured tube configuration a capacitor value corresponds to (if any). */
+export function tubosPreset(cuF: number): TubosPreset {
+  if (cuF === 0) return "none";
+  if (Math.abs(cuF - TUBOS_C1_UF) < TUBOS_PRESET_TOL_UF) return "c1";
+  if (Math.abs(cuF - TUBOS_C2_UF) < TUBOS_PRESET_TOL_UF) return "c2";
+  return "custom";
+}
 export const TUBOS_C_MAX_UF = 20;
 
 // Banco de capacitores: X_C = U/I₁ (foto de 2026).
@@ -300,9 +313,16 @@ export function measuredReference(
       return trio("BLM", "BLB", "BLT");
     case "tubos":
       if (connection !== "mono") return null;
-      if (Math.abs(tubosCuF - TUBOS_C1_UF) < 0.01) return ensayoById("CTC1") ?? null;
-      if (Math.abs(tubosCuF - TUBOS_C2_UF) < 0.01) return ensayoById("CTC2") ?? null;
-      return tubosCuF === 0 ? (ensayoById("ATM") ?? null) : null;
+      switch (tubosPreset(tubosCuF)) {
+        case "none":
+          return ensayoById("ATM") ?? null;
+        case "c1":
+          return ensayoById("CTC1") ?? null;
+        case "c2":
+          return ensayoById("CTC2") ?? null;
+        default:
+          return null;
+      }
     case "trafoVacio":
       return connection === "mono" ? (ensayoById("BDCVM") ?? null) : null;
     case "bancoCapacitores":
