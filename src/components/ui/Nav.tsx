@@ -18,6 +18,12 @@ const GROUPS: Record<string, { href: string; labelKey: string }[]> = {
     { href: "/circuitos-acoplados/part-a", labelKey: "common.nav.partA" },
     { href: "/circuitos-acoplados/part-b", labelKey: "common.nav.partB" },
   ],
+  "/trifasica": [
+    { href: "/trifasica", labelKey: "common.nav.theory" },
+    { href: "/trifasica/ensayos", labelKey: "tri.nav.ensayos" },
+    { href: "/trifasica/simulador", labelKey: "tri.nav.simulador" },
+    { href: "/trifasica/cuestionario", labelKey: "tri.nav.cuestionario" },
+  ],
   "/poliarmonicas": [
     { href: "/poliarmonicas", labelKey: "common.nav.theory" },
     { href: "/poliarmonicas/ensayos", labelKey: "poli.nav.ensayos" },

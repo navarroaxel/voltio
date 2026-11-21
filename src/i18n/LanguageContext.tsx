@@ -16,6 +16,7 @@ import * as quiz from "./dict/quiz";
 import * as sim from "./dict/sim";
 import * as acoplados from "./dict/acoplados";
 import * as poliarmonicas from "./dict/poliarmonicas";
+import * as trifasica from "./dict/trifasica";
 
 export type Language = "es" | "en";
 
@@ -32,6 +33,7 @@ const modules = [
   sim,
   acoplados,
   poliarmonicas,
+  trifasica,
 ];
 
 const translations: Record<Language, Record<string, string>> = {

@@ -13,6 +13,10 @@ Coursework platform for **Electrotécnica I (UTN FRBA)**. A fully client-side [N
 | `/resonancia/part-a`        | Part A: series RLC, sweeping C (50 Hz)        | active |
 | `/resonancia/part-b`        | Part B: series RLC, sweeping frequency (GAF)  | active |
 | `/resonancia/questionnaire` | Questionnaire (5 questions with analysis)     | active |
+| `/trifasica`                | TP3 Three-phase circuits — theory + objectives | active |
+| `/trifasica/ensayos`        | Measured star-load tests, phasor diagrams, model comparison | active |
+| `/trifasica/simulador`      | Star point / neutral simulator (capacitor or inductor in phase S) | active |
+| `/trifasica/cuestionario`   | Handout questionnaire (4 questions) | active |
 | `/poliarmonicas`            | TP4 Polyharmonic regime — theory + objectives | active |
 | `/poliarmonicas/ensayos`    | Measured tests viewer (Fluke captures) | active |
 | `/poliarmonicas/simulador`  | Grid-interference simulator | active |
