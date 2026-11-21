@@ -2,6 +2,7 @@
 
 import { useLanguage } from "@/i18n/LanguageContext";
 import { fmt } from "@/lib/format";
+import { renderSub } from "@/components/ui/Sub";
 import { abs, add, c, type Complex, type Phase } from "@/lib/three-phase-engine";
 
 /**
@@ -14,8 +15,8 @@ import { abs, add, c, type Complex, type Phase } from "@/lib/three-phase-engine"
 export interface PhasorData {
   /** Source phase voltages (n → vertex). */
   vertices: Record<Phase, Complex>;
-  /** N' relative to n. */
-  UN: Complex;
+  /** N' relative to n; null when the displacement is unknown (n cannot be placed). */
+  UN: Complex | null;
   I: Record<Phase, Complex>;
   IN?: Complex | null;
   /** Line voltage magnitudes for the triangle sides (RS, ST, TR). */
@@ -37,11 +38,28 @@ const COLORS = {
   line: "currentColor",
 };
 
+const MARGIN = 54; // room for arrowheads and labels
+
 const px = (z: Complex) => ({ x: CX + z.re * KU, y: CY - z.im * KU });
-const pxI = (origin: { x: number; y: number }, z: Complex) => ({
-  x: origin.x + z.re * KI,
-  y: origin.y - z.im * KI,
+const pxI = (origin: { x: number; y: number }, z: Complex, k: number) => ({
+  x: origin.x + z.re * k,
+  y: origin.y - z.im * k,
 });
+
+/** Largest current scale (px/A) that keeps every arrow tip and label inside the viewBox. */
+function currentScale(origins: Array<{ o: { x: number; y: number }; z: Complex }>): number {
+  let k = KI;
+  for (const { o, z } of origins) {
+    const lim = (v: number, lo: number, hi: number, d: number) =>
+      d > 0 ? (hi - v) / d : d < 0 ? (lo - v) / d : Infinity;
+    k = Math.min(
+      k,
+      lim(o.x, MARGIN, W - MARGIN, z.re),
+      lim(o.y, MARGIN, H - MARGIN, -z.im),
+    );
+  }
+  return Math.max(k, 4);
+}
 
 function Arrow({
   from,
@@ -87,14 +105,20 @@ export function PhasorDiagram({ data }: { data: PhasorData }) {
   const { t } = useLanguage();
   const { vertices, UN, I, IN, Uline } = data;
   const O = px(c(0));
-  const Np = px(UN);
+  const knownN = UN !== null;
+  const un = UN ?? c(0);
+  const Np = px(un);
   const V = {
     R: px(vertices.R),
     S: px(vertices.S),
     T: px(vertices.T),
   };
   const phases: Phase[] = ["R", "S", "T"];
-  const Uload = (p: Phase) => abs(add(vertices[p], c(-UN.re, -UN.im)));
+  const kI = currentScale([
+    ...phases.map((p) => ({ o: Np, z: I[p] })),
+    ...(IN ? [{ o: O, z: IN }] : []),
+  ]);
+  const Uload = (p: Phase) => abs(add(vertices[p], c(-un.re, -un.im)));
   const labelOffset: Record<Phase, { dx: number; dy: number; anchor: "start" | "end" | "middle" }> = {
     R: { dx: 8, dy: 14, anchor: "start" },
     S: { dx: -8, dy: 14, anchor: "end" },
@@ -141,17 +165,21 @@ export function PhasorDiagram({ data }: { data: PhasorData }) {
         ))}
         {/* currents from N' */}
         {phases.map((p) => (
-          <Arrow key={`i${p}`} from={Np} to={pxI(Np, I[p])} color={COLORS.I} width={2.2} />
+          <Arrow key={`i${p}`} from={Np} to={pxI(Np, I[p], kI)} color={COLORS.I} width={2.2} />
         ))}
-        {/* displacement n → N' */}
-        <Arrow from={O} to={Np} color={COLORS.UN} width={2.2} />
-        {IN ? <Arrow from={O} to={pxI(O, IN)} color={COLORS.IN} width={2.6} /> : null}
+        {/* displacement n → N' (only when n can be placed) */}
+        {knownN ? <Arrow from={O} to={Np} color={COLORS.UN} width={2.2} /> : null}
+        {IN ? <Arrow from={O} to={pxI(O, IN, kI)} color={COLORS.IN} width={2.6} /> : null}
 
         {/* points */}
-        <circle cx={O.x} cy={O.y} r={3.5} fill="currentColor" />
-        <text x={O.x - 8} y={O.y - 6} textAnchor="end" fontSize={12} fontWeight={600}>
-          n
-        </text>
+        {knownN ? (
+          <>
+            <circle cx={O.x} cy={O.y} r={3.5} fill="currentColor" />
+            <text x={O.x - 8} y={O.y - 6} textAnchor="end" fontSize={12} fontWeight={600}>
+              n
+            </text>
+          </>
+        ) : null}
         <circle cx={Np.x} cy={Np.y} r={3.5} fill="currentColor" />
         <text x={Np.x + 8} y={Np.y + 14} fontSize={12} fontWeight={600}>
           N&apos;
@@ -175,7 +203,7 @@ export function PhasorDiagram({ data }: { data: PhasorData }) {
           );
         })}
         {phases.map((p) => {
-          const tip = pxI(Np, I[p]);
+          const tip = pxI(Np, I[p], kI);
           const dx = tip.x - Np.x;
           const dy = tip.y - Np.y;
           const len = Math.hypot(dx, dy) || 1;
@@ -197,15 +225,15 @@ export function PhasorDiagram({ data }: { data: PhasorData }) {
             </text>
           );
         })}
-        {abs(UN) > 0.5 ? (
+        {knownN && abs(un) > 0.5 ? (
           <text x={(O.x + Np.x) / 2 + 12} y={(O.y + Np.y) / 2} fontSize={11} fontWeight={600} fill={COLORS.UN}>
-            <Sub base="U" sub="N" /> {fmt(abs(UN), 0)} V
+            <Sub base="U" sub="N" /> {fmt(abs(un), 0)} V
           </text>
         ) : null}
         {IN && abs(IN) > 0.02 ? (
           <text
-            x={pxI(O, IN).x + 8}
-            y={pxI(O, IN).y - 6}
+            x={pxI(O, IN, kI).x + 8}
+            y={pxI(O, IN, kI).y - 6}
             fontSize={11}
             fontWeight={600}
             fill={COLORS.IN}
@@ -217,6 +245,15 @@ export function PhasorDiagram({ data }: { data: PhasorData }) {
           {t("tri.phasor.axis")}
         </text>
       </svg>
+      {!knownN ? (
+        <p className="mt-1 text-center text-xs text-amber-700 dark:text-amber-400">
+          {renderSub(t("tri.phasor.noN"))}
+        </p>
+      ) : kI < KI - 0.01 ? (
+        <p className="mt-1 text-center text-xs text-neutral-500 dark:text-neutral-400">
+          {t("tri.phasor.scaled")}
+        </p>
+      ) : null}
       <figcaption className="mt-2 flex flex-wrap justify-center gap-x-4 gap-y-1 text-xs text-neutral-600 dark:text-neutral-300">
         {(
           [

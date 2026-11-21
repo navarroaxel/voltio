@@ -150,10 +150,14 @@ export default function EnsayosPage() {
           <ul className="space-y-2 text-sm text-neutral-700 dark:text-neutral-300">
             <li>
               {renderSub(t("tri.ens.checks.sumI"))} <strong>{fmt(sumIabs, 2)} A</strong>
-              {caso.neutral && caso.IN ? (
+              {caso.neutral ? (
                 <>
                   {" "}
-                  — {renderSub(t("tri.ens.checks.sumIreported"))} <strong>{fmt(caso.IN, 2)} A</strong>.
+                  — {renderSub(t("tri.ens.checks.sumIreported"))}{" "}
+                  <strong>
+                    {caso.IN === 0 || caso.IN === null ? t("tri.ens.m.approxZero") : fmt(caso.IN, 2)} A
+                  </strong>
+                  .
                 </>
               ) : (
                 <> — {t("tri.ens.checks.sumI0")}</>

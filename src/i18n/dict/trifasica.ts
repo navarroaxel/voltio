@@ -30,7 +30,7 @@ export const es: Record<string, string> = {
   "tri.theory.summary.p3":
     "En una carga desequilibrada las impedancias difieren. Sin neutro, el punto estrella se desplaza respecto de n y las tensiones de fase dejan de ser iguales (teorema de Millman). Con neutro, N' queda fijo en el potencial de n y el desequilibrio aparece como corriente por el neutro, I_N = I_R + I_S + I_T.",
   "tri.theory.summary.p4":
-    "La potencia activa total es la suma de las de las tres fases (P = 3·U_L·I_L·cos φ si es equilibrada). El método de Aron mide P = W1 + W2 con dos wattímetros en un sistema de tres conductores. Con neutro y desequilibrio la lectura puede dejar de ser válida.",
+    "La potencia activa total es la suma de las de las tres fases (P = √3·U_L·I_L·cos φ si es equilibrada). El método de Aron mide P = W1 + W2 con dos wattímetros en un sistema de tres conductores. Con neutro y desequilibrio la lectura puede dejar de ser válida.",
   "tri.theory.circuit.title": "Características del circuito",
   "tri.theory.circuit.item1": "Tensión de línea de 380 V.",
   "tri.theory.circuit.item2": "Banco de resistencias de 5 kW al 25 % (≈ 123 Ω por fase según el informe).",
@@ -82,7 +82,7 @@ export const es: Record<string, string> = {
   "tri.ens.checks.p3ui":
     "3·U·I (aprox. con las lecturas, carga resistiva):",
   "tri.ens.checks.p3uiNote":
-    "El wattímetro marcó más que ese valor; no hay en el informe una explicación, se atribuye al error de los instrumentos.",
+    "El wattímetro marcó más que ese valor. El informe no explica la diferencia; podría deberse al error de los instrumentos (hipótesis sin verificar).",
   "tri.ens.table.title": "Tabla de valores (§5.2 del informe)",
   "tri.ens.table.caption":
     "S/N = sin neutro, C/N = con neutro. U_N es la tensión entre punto estrella y neutro (sin neutro); I_N la corriente por el neutro (con neutro).",
@@ -153,6 +153,8 @@ export const es: Record<string, string> = {
   "tri.phasor.legend.IN": "Corriente de neutro",
   "tri.phasor.legend.line": "Tensión de línea (fuente)",
   "tri.phasor.axis": "referencia: URS en 0°",
+  "tri.phasor.scaled": "Corrientes dibujadas a escala reducida.",
+  "tri.phasor.noN": "El informe no da el ángulo de U_N: no se puede ubicar el neutro n; se muestran las tensiones de fase de la carga.",
 
   // --- esquema
   "tri.schem.aria":
@@ -230,7 +232,7 @@ export const en: Record<string, string> = {
   "tri.theory.summary.p3":
     "In an unbalanced load the impedances differ. Without a neutral the star point shifts with respect to n and the phase voltages are no longer equal (Millman's theorem). With a neutral, N' is held at the potential of n and the imbalance shows up as neutral current, I_N = I_R + I_S + I_T.",
   "tri.theory.summary.p4":
-    "Total active power is the sum over the three phases (P = 3·U_L·I_L·cos φ if balanced). Aron's method measures P = W1 + W2 with two wattmeters in a three-wire system. With a neutral and an unbalanced load the reading may no longer be valid.",
+    "Total active power is the sum over the three phases (P = √3·U_L·I_L·cos φ if balanced). Aron's method measures P = W1 + W2 with two wattmeters in a three-wire system. With a neutral and an unbalanced load the reading may no longer be valid.",
   "tri.theory.circuit.title": "Circuit characteristics",
   "tri.theory.circuit.item1": "380 V line voltage.",
   "tri.theory.circuit.item2": "5 kW resistor bank at 25 % (≈ 123 Ω per phase according to the report).",
@@ -281,7 +283,7 @@ export const en: Record<string, string> = {
   "tri.ens.checks.p3ui":
     "3·U·I (approx. from the readings, resistive load):",
   "tri.ens.checks.p3uiNote":
-    "The wattmeter read more than that value; the report gives no explanation, it is attributed to instrument error.",
+    "The wattmeter read more than that value. The report does not explain the difference; it could be instrument error (unverified hypothesis).",
   "tri.ens.table.title": "Table of values (§5.2 of the report)",
   "tri.ens.table.caption":
     "S/N = no neutral, C/N = with neutral. U_N is the voltage between star point and neutral (no neutral); I_N the neutral current (with neutral).",
@@ -350,6 +352,8 @@ export const en: Record<string, string> = {
   "tri.phasor.legend.IN": "Neutral current",
   "tri.phasor.legend.line": "Line voltage (source)",
   "tri.phasor.axis": "reference: URS at 0°",
+  "tri.phasor.scaled": "Currents drawn at a reduced scale.",
+  "tri.phasor.noN": "The report gives no angle for U_N: the neutral n cannot be placed; load phase voltages are shown.",
 
   "tri.schem.aria":
     "Star load schematic with one resistor per phase, an element in phase S, the Aron wattmeters and the neutral wire.",
