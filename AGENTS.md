@@ -12,21 +12,25 @@ Coursework platform for **Electrotécnica I (UTN FRBA)**. A fully client-side Ne
 
 ## Assignments (TPs)
 
-| Route                      | Assignment                          | Status |
-| -------------------------- | ----------------------------------- | ------ |
-| `/`                        | TP index                            | —      |
-| `/resonancia`              | TP1 Resonance — theory + objectives | active |
-| `/resonancia/part-a`        | Part A: series RLC, sweeps C       | active |
-| `/resonancia/part-b`        | Part B: series RLC, sweeps f       | active |
-| `/resonancia/questionnaire` | Questionnaire (5 questions)        | active |
+| Route                          | Assignment                                    | Status |
+| ------------------------------ | ---------------------------------------------- | ------ |
+| `/`                             | TP index                                       | —      |
+| `/resonancia`                   | TP1 Resonance — theory + objectives            | active |
+| `/resonancia/part-a`            | Part A: series RLC, sweeps C                   | active |
+| `/resonancia/part-b`            | Part B: series RLC, sweeps f                   | active |
+| `/resonancia/questionnaire`     | Questionnaire (5 questions)                    | active |
+| `/circuitos-acoplados`          | TP2 Coupled circuits — theory + objectives     | active |
+| `/circuitos-acoplados/part-a`   | Part A: transformer L1/L2/M12/M21/K (live inputs, no lab data yet) | active |
+| `/circuitos-acoplados/part-b`   | Part B: homologous terminals — DC, AC ammeter, AC voltmeter methods | active |
 
-Upcoming assignments (three-phase, polyharmonic, coupled circuits) are added as `/trifasica/...`, etc. Keep `TPS` in `src/app/page.tsx` and `LINKS` in `src/components/ui/Nav.tsx` as the authoritative sources.
+Upcoming assignments (three-phase, polyharmonic) are added as `/trifasica/...`, etc. Keep `TPS` in `src/app/page.tsx` and the `GROUPS` map in `src/components/ui/Nav.tsx` as the authoritative sources.
 
 ## Architecture
 
 - **Engine**: `src/lib/rlc-engine.ts` is pure TypeScript (no React); all the series-RLC math lives there. It is tested directly with Vitest (`npm test`). Do not mock the engine in component tests.
 - **Units**: the engine works in SI (L in H, **C in farads**). The tables in `src/lib/measured-data.ts` store C in µF and convert with `UF` (1e-6) when calling the engine.
 - **Measured data**: `src/lib/measured-data.ts` holds the tables transcribed from the report (`lab-resonancia.pdf`) and the constants for each experiment. The Part B R/L/C values are **estimated** (the assignment leaves them blank; `PART_B_ESTIMATED` flag) — a single place to replace with the real ones. `PART_B_RESONANCE` derives the measured resonance row (max U_RS) and is the authoritative source for citing the peak in conclusions and the questionnaire.
+- **TP2 (circuitos acoplados) has no measured-data table yet** — the lab hasn't been run. `src/lib/transformer-engine.ts` is the pure engine (calcTransformerParams, homologousByCurrent, homologousByVoltage); readings are entered live via `NumberField` into `circuitos-a-store.tsx`/`circuitos-b-store.tsx` instead of being hardcoded. Once the lab data exists, consider adding a `TRANSFORMER_MEASURED`-style table to `transformer-data.ts` following the TP1 pattern.
 - **Analysis vs measurement**: Part A conclusions quantify with the engine (Q, I_max); the questionnaire and Part B conclusions **cite measured values** (`PART_B_RESONANCE`), not calculations from the estimates, except for hypothetical scenarios (e.g. Part B at 50 Hz), which are labeled as theoretical projections.
 - **State**: each simulator has its own Context + `useReducer` in `src/store/`. Circuit parameters are **fixed** (from the assignment); what's interactive is picking the operating point, toggling charts, and stepping through phasors.
 - **Charts**: plain Canvas 2D, no library. `charts/LineChart.tsx` is generic (theoretical lines + measured points). Each draw reads the theme inside the `useEffect` via `useUI()` (key `state.theme`) and includes it in the deps so it redraws on theme change.
@@ -37,7 +41,7 @@ Upcoming assignments (three-phase, polyharmonic, coupled circuits) are added as 
 
 - C = 0 ⇒ open capacitor: `calcRLC` returns I = 0, U_C = U, Z = ∞ (never divides by zero).
 - `RLCResult` includes `R` and `RL` so the diagrams can reconstruct the phasors.
-- Every visible string is in Spanish; there is no i18n layer.
+- Every visible string goes through the i18n layer (`src/i18n/`, dict files per feature registered in `LanguageContext.tsx`) — Spanish is the primary/default language, English is the secondary one. Never hardcode a user-visible string in a component.
 
 ## Testing
 

@@ -30,3 +30,37 @@ export interface RLCResult {
   f0: number; // resonant frequency (Hz)
   Qfactor: number; // quality factor Q
 }
+
+/** Input for TP2's transformer-parameter determination (5.1). SI units. */
+export interface TransformerParamsInput {
+  U1: number; // primary voltage, Conexión I (V)
+  I10: number; // primary current, Conexión I (A)
+  U20: number; // secondary voltage induced, Conexión I (V)
+  U2: number; // secondary voltage, Conexión II (V)
+  I20: number; // secondary current, Conexión II (A)
+  U10: number; // primary voltage induced, Conexión II (V)
+  f: number; // frequency (Hz)
+}
+
+/** Result of the transformer-parameter determination. */
+export interface TransformerParamsResult {
+  omega: number; // angular frequency ω = 2πf (rad/s)
+  L1: number; // primary self-inductance (H)
+  M12: number; // mutual inductance from Conexión I (H)
+  L2: number; // secondary self-inductance (H)
+  M21: number; // mutual inductance from Conexión II (H)
+  K: number; // coupling coefficient
+}
+
+/** Result of the homologous-terminal test with the series-ammeter method. */
+export interface HomologousByCurrentResult {
+  homologous: "I" | "II" | null; // which bridge connection is homologous
+  seriesMode: "additive-in-II" | "subtractive-in-II" | null;
+}
+
+/** Result of the homologous-terminal test with the applied-voltage method. */
+export interface HomologousByVoltageResult {
+  homologous: boolean | null;
+  diff: number; // |U1 - U2|
+  sum: number; // U1 + U2
+}
