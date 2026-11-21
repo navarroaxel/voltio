@@ -8,7 +8,6 @@ interface TPCard {
   titleKey: string;
   descKey: string;
   href?: string;
-  status: "activo" | "próximamente";
 }
 
 const TPS: TPCard[] = [
@@ -17,28 +16,24 @@ const TPS: TPCard[] = [
     titleKey: "home.tp1.title",
     descKey: "home.tp1.desc",
     href: "/resonancia",
-    status: "activo",
   },
   {
     n: 2,
     titleKey: "home.tp2.title",
     descKey: "home.tp2.desc",
     href: "/circuitos-acoplados",
-    status: "activo",
   },
   {
     n: 3,
     titleKey: "home.tp3.title",
     descKey: "home.tp3.desc",
     href: "/trifasica",
-    status: "activo",
   },
   {
     n: 4,
     titleKey: "home.tp4.title",
     descKey: "home.tp4.desc",
     href: "/poliarmonicas",
-    status: "activo",
   },
 ];
 
@@ -60,26 +55,13 @@ export default function Home() {
         {TPS.map((tp) => {
           const inner = (
             <>
-              <div className="flex items-center justify-between">
+              <div>
                 <span className="text-xs font-semibold tracking-wide text-blue-600 uppercase">
                   {t("home.tp.prefix")}
                   {tp.n}
                 </span>
-                <span
-                  className={
-                    tp.status === "activo"
-                      ? "rounded-full bg-green-100 px-2 py-0.5 text-xs font-medium text-green-700 dark:bg-green-950 dark:text-green-300"
-                      : "rounded-full bg-neutral-100 px-2 py-0.5 text-xs font-medium text-neutral-500 dark:bg-neutral-800 dark:text-neutral-400"
-                  }
-                >
-                  {tp.status === "activo"
-                    ? t("home.status.activo")
-                    : t("home.status.proximamente")}
-                </span>
               </div>
-              <h2 className="mt-2 text-xl font-semibold">
-                {t(tp.titleKey)}
-              </h2>
+              <h2 className="mt-2 text-xl font-semibold">{t(tp.titleKey)}</h2>
               <p className="mt-1 text-sm text-neutral-600 dark:text-neutral-300">
                 {t(tp.descKey)}
               </p>
