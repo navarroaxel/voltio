@@ -27,7 +27,7 @@ export const es: Record<string, string> = {
 
   "acopl.theory.material.title": "Material a utilizar",
   "acopl.theory.material.item1":
-    "1 Transformador monofásico marca Virason de 2000 kVA / 2×110 V – 2×63,5 V – 15,8 A.",
+    "1 Transformador monofásico marca Virason de 2000 VA / 2×110 V – 2×63,5 V – 15,8 A.",
   "acopl.theory.material.item2":
     "1 Amperímetro analógico de corriente alterna, rangos 0,5 – 1 – 2 – 5 A.",
   "acopl.theory.material.item3":
@@ -176,7 +176,7 @@ export const en: Record<string, string> = {
 
   "acopl.theory.material.title": "Equipment",
   "acopl.theory.material.item1":
-    "1 Virason single-phase transformer, 2000 kVA / 2×110 V – 2×63.5 V – 15.8 A.",
+    "1 Virason single-phase transformer, 2000 VA / 2×110 V – 2×63.5 V – 15.8 A.",
   "acopl.theory.material.item2":
     "1 analog AC ammeter, ranges 0.5 – 1 – 2 – 5 A.",
   "acopl.theory.material.item3": "1 analog DC ammeter, 3 A scale.",

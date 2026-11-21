@@ -7,7 +7,7 @@
  */
 export const TRANSFORMER_NAMEPLATE = {
   brand: "Virason",
-  power: "2000 kVA", // as transcribed from the assignment sheet
+  power: "2000 VA", // 2000 VA (the sheet's "kVA" is a typo; confirmed by the student)
   primary: "2 x 110 V",
   secondary: "2 x 63,5 V",
   current: "15,8 A",
