@@ -38,6 +38,7 @@ export default function PartBPage() {
             key={m.key}
             type="button"
             onClick={() => dispatch({ type: "SET_METHOD", method: m.key })}
+            aria-pressed={state.method === m.key}
             className={
               state.method === m.key
                 ? "rounded-md bg-white px-3 py-1.5 text-sm font-medium shadow-sm dark:bg-neutral-700"
@@ -77,6 +78,7 @@ function DCMethod() {
         <button
           type="button"
           onClick={() => dispatch({ type: "SET_DC_DEFLECTS", value: true })}
+          aria-pressed={state.dcDeflectsForward === true}
           className={
             state.dcDeflectsForward === true
               ? "rounded-lg bg-blue-600 px-3 py-1.5 text-sm font-medium text-white"
@@ -88,6 +90,7 @@ function DCMethod() {
         <button
           type="button"
           onClick={() => dispatch({ type: "SET_DC_DEFLECTS", value: false })}
+          aria-pressed={state.dcDeflectsForward === false}
           className={
             state.dcDeflectsForward === false
               ? "rounded-lg bg-blue-600 px-3 py-1.5 text-sm font-medium text-white"
@@ -117,7 +120,12 @@ function ACAmmeterMethod() {
 
   const I2I = num(state.I2I);
   const I2II = num(state.I2II);
-  const { homologous } = homologousByCurrent(I2I, I2II);
+  const { homologous } = homologousByCurrent(
+    I2I,
+    I2II,
+    num(state.UI),
+    num(state.UII),
+  );
 
   return (
     <Card title={t("acopl.partb.acAmmeter.title")}>

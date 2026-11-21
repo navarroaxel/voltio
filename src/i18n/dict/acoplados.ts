@@ -133,6 +133,18 @@ export const es: Record<string, string> = {
 
   "acopl.partb.summary.title": "Síntesis de los tres métodos",
   "acopl.partb.summary.pending": "Completá al menos un ensayo para ver la síntesis.",
+
+  "acopl.schem.primary": "Primario",
+  "acopl.schem.secondary": "Secundario",
+  "acopl.schem.bridgeVU": "puente v–U",
+  "acopl.schem.bridgeVV": "puente v–V",
+  "acopl.schem.aria.parteA-I": "Circuito de determinación de parámetros, Conexión I: primario excitado",
+  "acopl.schem.aria.parteA-II": "Circuito de determinación de parámetros, Conexión II: secundario excitado",
+  "acopl.schem.aria.dc": "Circuito de determinación de bornes homólogos con corriente continua",
+  "acopl.schem.aria.ac-ammeter-I": "Circuito con amperímetro, Conexión I",
+  "acopl.schem.aria.ac-ammeter-II": "Circuito con amperímetro, Conexión II",
+  "acopl.schem.aria.ac-voltmeter-I": "Circuito con voltímetros, Conexión I",
+  "acopl.schem.aria.ac-voltmeter-II": "Circuito con voltímetros, Conexión II",
 };
 
 export const en: Record<string, string> = {
@@ -269,4 +281,16 @@ export const en: Record<string, string> = {
 
   "acopl.partb.summary.title": "Summary across methods",
   "acopl.partb.summary.pending": "Fill in at least one test to see the summary.",
+
+  "acopl.schem.primary": "Primary",
+  "acopl.schem.secondary": "Secondary",
+  "acopl.schem.bridgeVU": "bridge v–U",
+  "acopl.schem.bridgeVV": "bridge v–V",
+  "acopl.schem.aria.parteA-I": "Parameter determination circuit, Connection I: primary excited",
+  "acopl.schem.aria.parteA-II": "Parameter determination circuit, Connection II: secondary excited",
+  "acopl.schem.aria.dc": "Homologous-terminal circuit with direct current",
+  "acopl.schem.aria.ac-ammeter-I": "Ammeter circuit, Connection I",
+  "acopl.schem.aria.ac-ammeter-II": "Ammeter circuit, Connection II",
+  "acopl.schem.aria.ac-voltmeter-I": "Voltmeter circuit, Connection I",
+  "acopl.schem.aria.ac-voltmeter-II": "Voltmeter circuit, Connection II",
 };

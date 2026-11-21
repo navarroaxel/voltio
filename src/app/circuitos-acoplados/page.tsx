@@ -21,14 +21,6 @@ const MATERIAL_KEYS = [
   "acopl.theory.material.item6",
 ];
 
-function Formula({ children }: { children: React.ReactNode }) {
-  return (
-    <code className="rounded bg-neutral-100 px-1.5 py-0.5 font-mono text-[0.95em] text-neutral-800 dark:bg-neutral-800 dark:text-neutral-100">
-      {children}
-    </code>
-  );
-}
-
 export default function CircuitosAcopladosHub() {
   const { t } = useLanguage();
 
@@ -58,10 +50,7 @@ export default function CircuitosAcopladosHub() {
         <div className="space-y-3 text-sm text-neutral-700 dark:text-neutral-300">
           <p>{t("acopl.theory.summary.p1")}</p>
           <p>{t("acopl.theory.summary.p2")}</p>
-          <p>
-            {t("acopl.theory.summary.p3")}{" "}
-            <Formula>K = M/√(L₁·L₂)</Formula>
-          </p>
+          <p>{t("acopl.theory.summary.p3")}</p>
           <p>{t("acopl.theory.summary.p4")}</p>
         </div>
       </Card>

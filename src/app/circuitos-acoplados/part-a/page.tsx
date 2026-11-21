@@ -5,7 +5,11 @@ import { TransformerSchematic } from "@/components/sim/TransformerSchematic";
 import { MetricsGrid, type Metric } from "@/components/sim/MetricsGrid";
 import { NumberField } from "@/components/sim/NumberField";
 import { useCircuitosA, num } from "@/store/circuitos-a-store";
-import { calcTransformerParams } from "@/lib/transformer-engine";
+import {
+  calcTransformerParams,
+  classifyCoupling,
+  mutualsAgree,
+} from "@/lib/transformer-engine";
 import { F_LINEA } from "@/lib/transformer-data";
 import { fmt } from "@/lib/format";
 import { useLanguage } from "@/i18n/LanguageContext";
@@ -34,7 +38,9 @@ export default function PartAPage() {
     f: F_LINEA,
   });
 
-  const hasReadings = I10 > 0 && I20 > 0 && U1 > 0 && U2 > 0;
+  const hasReadings =
+    I10 > 0 && I20 > 0 && U1 > 0 && U2 > 0 && U20 > 0 && U10 > 0;
+  const coupling = classifyCoupling(result.K);
 
   const metrics: Metric[] = [
     { label: "L1", value: fmt(result.L1 * 1000, 2), unit: "mH", accent: "blue" },
@@ -105,16 +111,15 @@ export default function PartAPage() {
             {t("acopl.parta.conclusions.text")}{" "}
             <strong>K = {fmt(result.K, 3)}</strong>
             {" ("}
-            {result.K >= 0.95
+            {coupling === "perfect"
               ? t("acopl.parta.conclusions.kPerfect")
-              : result.K >= 0.7
+              : coupling === "strong"
                 ? t("acopl.parta.conclusions.kStrong")
                 : t("acopl.parta.conclusions.kWeak")}
             ), {t("acopl.parta.conclusions.with")} M₁₂ ={" "}
             {fmt(result.M12 * 1000, 2)} mH {t("acopl.parta.conclusions.and")}{" "}
             M₂₁ = {fmt(result.M21 * 1000, 2)} mH
-            {Math.abs(result.M12 - result.M21) <
-            0.05 * Math.max(result.M12, result.M21)
+            {mutualsAgree(result.M12, result.M21)
               ? t("acopl.parta.conclusions.mConsistent")
               : t("acopl.parta.conclusions.mInconsistent")}
           </p>
