@@ -3,8 +3,6 @@ export const es: Record<string, string> = {
   "home.intro":
     "Simuladores interactivos para los laboratorios de la cátedra (UTN – FRBA). Cada TP muestra los datos medidos en el laboratorio junto con las curvas teóricas, calcula las magnitudes y arma los gráficos y diagramas que pide el informe.",
   "home.tp.prefix": "TP N°",
-  "home.status.activo": "activo",
-  "home.status.proximamente": "próximamente",
   "home.tp1.title": "Resonancia",
   "home.tp1.desc":
     "Circuito RLC serie: respuesta variando la capacidad (Parte A) y variando la frecuencia (Parte B).",
@@ -24,8 +22,6 @@ export const en: Record<string, string> = {
   "home.intro":
     "Interactive simulators for the course labs (UTN – FRBA). Each assignment shows the data measured in the lab alongside the theoretical curves, computes the relevant quantities, and builds the charts and diagrams the report asks for.",
   "home.tp.prefix": "TP #",
-  "home.status.activo": "active",
-  "home.status.proximamente": "coming soon",
   "home.tp1.title": "Resonance",
   "home.tp1.desc":
     "Series RLC circuit: response while sweeping capacitance (Part A) and while sweeping frequency (Part B).",
