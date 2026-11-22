@@ -2,11 +2,13 @@ import { describe, expect, it } from "vitest";
 import {
   analyze,
   loadCurrent,
+  loadCurrentClean,
   simulate,
   thdV,
   voltageSamples,
   type GridVoltage,
 } from "../harmonics-engine";
+import { flukeModel } from "../fluke-view";
 import {
   BANCO_CAPACITORES_2026,
   buildLoad,
@@ -166,6 +168,7 @@ describe("efecto de la tensión de red sobre el capacitor", () => {
     };
     const r = run("bancoCapacitores", grid);
     expect(r.thdI).toBeCloseTo(5 * 0.024, 3);
+    // La onda es la ideal (90°); el +5° de la foto es sólo de medición (ver `simulate`).
     expect(r.phi1Deg).toBeCloseTo(90, 1);
   });
 
@@ -244,7 +247,11 @@ describe("THD con armónicas fuera del espectro graficado", () => {
       V1: 230,
       harmonics: [{ order: 27, relative: 0.1, phaseDeg: 0 }],
     };
-    const r = run("halogena", grid);
+    // Sin el ruido de la red: se prueba sólo el contenido armónico de la carga.
+    const r = analyze(
+      loadCurrentClean(buildLoad("halogena"), grid),
+      voltageSamples(grid),
+    );
     expect(r.thdI).toBeCloseTo(0.1, 3);
   });
 });
@@ -256,5 +263,124 @@ describe("preselección de capacitor de los tubos", () => {
     expect(tubosPreset(15.8)).toBe("c2");
     expect(tubosPreset(11)).toBe("custom");
     expect(measuredReference("tubos", "mono", 15.8)?.id).toBe("CTC2");
+  });
+});
+
+describe("flukeModel (vista analizador)", () => {
+  const grid: GridVoltage = {
+    V1: 230,
+    harmonics: [{ order: 5, relative: 0.03, phaseDeg: 0 }],
+  };
+  const sim3 = simulate({
+    grid,
+    load: buildLoad("bajoConsumo", 0),
+    connection: "trifasica",
+  });
+  const m = flukeModel(sim3);
+
+  it("L2 y L3 son L1 desplazadas 120° y 240° en la fundamental", () => {
+    const [l1, l2, l3] = m.phases;
+    const d = (a: number, b: number) => {
+      let x = a - b;
+      while (x > 180) x -= 360;
+      while (x <= -180) x += 360;
+      return x;
+    };
+    expect(d(l2.angV, l1.angV)).toBeCloseTo(-120, 3);
+    expect(d(l3.angV, l1.angV)).toBeCloseTo(-240 + 360, 3);
+    expect(d(l2.angI, l1.angI)).toBeCloseTo(-120, 3);
+  });
+
+  it("una fase sin carga tiene corriente cero pero tensión presente", () => {
+    const mono = flukeModel(
+      simulate({ grid, load: buildLoad("bajoConsumo", 0), connection: "mono" }),
+    );
+    expect(mono.phases[1].loaded).toBe(false);
+    expect(mono.phases[1].Irms).toBe(0);
+    expect(mono.phases[1].Vrms).toBeGreaterThan(200);
+    expect(mono.neutral.Irms).toBeCloseTo(mono.phases[0].Irms, 6);
+  });
+
+  it("la señal desplazada conserva el RMS", () => {
+    const rms = (x: number[]) =>
+      Math.sqrt(x.reduce((s, y) => s + y * y, 0) / x.length);
+    expect(rms(m.phases[1].i)).toBeCloseTo(rms(m.phases[0].i), 6);
+  });
+});
+
+describe("sin carga (corriente residual, BDEM)", () => {
+  const dia: GridVoltage = {
+    V1: 230.54,
+    harmonics: [
+      { order: 5, relative: 0.02, phaseDeg: 0 },
+      { order: 7, relative: 0.013, phaseDeg: 0 },
+    ],
+  };
+  const ideal = sine(230.54);
+  const load = buildLoad("sinCarga");
+
+  it("con la red del día reproduce I_RMS ≈ 17 mA, φ ≈ +5° y THD ≈ 65 % (BDEM)", () => {
+    const r = analyze(loadCurrent(load, dia), voltageSamples(dia));
+    expect(r.Irms).toBeCloseTo(0.017, 3);
+    expect(r.phi1Deg).toBeCloseTo(5, 0);
+    expect(r.thdI).toBeCloseTo(0.655, 1);
+  });
+
+  it("con red ideal no hay ruido: sin armónicas (en particular, nada en h11)", () => {
+    const r = analyze(loadCurrent(load, ideal), voltageSamples(ideal));
+    expect(r.thdI).toBeLessThan(1e-6);
+    expect(r.spectrum[10]).toBeLessThan(1e-9);
+    expect(r.I1).toBeCloseTo(0.0142, 3);
+  });
+
+  it("el ruido de la red es el mismo piso absoluto para toda carga (h11)", () => {
+    const h11 = (key: Parameters<typeof buildLoad>[0]) =>
+      analyze(loadCurrent(buildLoad(key), dia), voltageSamples(dia)).spectrum[10];
+    const ref = h11("sinCarga");
+    expect(ref).toBeGreaterThan(0.003);
+    // Cargas lineales: el h11 es sólo ruido de la red, igual al de sin carga.
+    for (const k of ["halogena", "bancoCapacitores"] as const)
+      expect(h11(k)).toBeCloseTo(ref, 3);
+  });
+
+  it("halógena con la red del día: THD ≈ 4,5 % (AHM), no 2,4 %", () => {
+    const r = analyze(loadCurrent(buildLoad("halogena"), dia), voltageSamples(dia));
+    expect(r.thdI).toBeGreaterThan(0.035);
+    expect(r.thdI).toBeLessThan(0.055);
+  });
+
+  it("la tensión sigue distorsionada y se ve en los canales V", () => {
+    const m = flukeModel(simulate({ grid: dia, load, connection: "mono" }));
+    expect(m.phases[0].thdV).toBeGreaterThan(0.02);
+    expect(m.phases[0].Irms).toBeLessThan(0.03);
+  });
+});
+
+describe("banco de capacitores: ángulo medido", () => {
+  const at = (g: GridVoltage) =>
+    simulate({ grid: g, load: buildLoad("bancoCapacitores"), connection: "mono" });
+  const dia: GridVoltage = {
+    V1: BANCO_CAPACITORES_2026.V,
+    harmonics: [{ order: 5, relative: 0.024, phaseDeg: 0 }],
+  };
+
+  it("red ideal: φ = 90° exactos", () => {
+    const s = at(sine(BANCO_CAPACITORES_2026.V));
+    expect(s.phase.phi1Deg).toBeCloseTo(90, 3);
+    expect(s.phase.I1).toBeCloseTo(2.17, 3);
+  });
+
+  it("con el THD_V del día (2,4 %) el fasorial muestra ≈ +95° como la foto", () => {
+    const s = at(dia);
+    expect(s.phase.phi1Deg).toBeCloseTo(95, 1);
+    expect(flukeModel(s).phases[0].angI).toBeCloseTo(95, 1);
+  });
+
+  it("el artefacto es sólo de medición: el capacitor no genera potencia activa", () => {
+    const s = at(dia);
+    // Un capacitor pasivo: P ≈ 0 (nunca negativa) y la onda sigue a 90°.
+    expect(s.phase.P).toBeGreaterThan(-0.5);
+    expect(Math.abs(s.phase.P)).toBeLessThan(0.5);
+    expect(s.phase.pf).toBeGreaterThan(-0.01);
   });
 });

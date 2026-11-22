@@ -34,6 +34,7 @@ const LABEL_X = (360 + 495 + DX) / 2; // Fluke más a la derecha: lugar para las
 
 /** Fila del tablero que se enciende para cada carga. */
 const ROW_OF_LOAD: Record<LoadKey, number> = {
+  sinCarga: -1,
   bajoConsumo: 1,
   led: 2,
   halogena: 3,
@@ -42,6 +43,7 @@ const ROW_OF_LOAD: Record<LoadKey, number> = {
   bancoCapacitores: 0,
 };
 const IS_LAMP: Record<LoadKey, boolean> = {
+  sinCarga: false,
   bajoConsumo: true,
   led: true,
   halogena: true,
@@ -84,6 +86,8 @@ export function BancoSchematic({
   const active = activePhases(connection);
   const litRow = ROW_OF_LOAD[load];
   const lamp = IS_LAMP[load];
+  // Capacitores en el tomacorriente: banco, o compensación de los tubos.
+  const hasCap = load === "bancoCapacitores" || (load === "tubos" && tubosC > 0);
   const lampLabels = [
     t("poli.sim.lamp.bc"),
     t("poli.sim.lamp.led"),
@@ -288,6 +292,14 @@ export function BancoSchematic({
                       stroke="currentColor"
                       strokeWidth="2"
                     />
+                    {isSocket && lit && hasCap && p === "R" ? (
+                      <g stroke="currentColor" strokeWidth="2.5" fill="none">
+                        <path d={`M${c.lampX} ${y + 28} V${y + 40} M${c.lampX - 18} ${y + 40} H${c.lampX + 18} M${c.lampX - 18} ${y + 48} H${c.lampX + 18} M${c.lampX} ${y + 48} V${y + 58}`} />
+                        <text x={c.lampX + 26} y={y + 50} fontSize="18" fontStyle="italic" fontWeight="bold" fill="currentColor" stroke="none">
+                          C
+                        </text>
+                      </g>
+                    ) : null}
                     {isSocket ? (
                       <text
                         x={c.lampX - 2}
@@ -345,7 +357,12 @@ export function BancoSchematic({
       <p className="mt-2 text-xs text-neutral-500 dark:text-neutral-400">
         {t("poli.sim.circuit.note")}
       </p>
-      {!lamp ? (
+      {hasCap ? (
+        <p className="mt-1 text-xs text-neutral-500 dark:text-neutral-400">
+          {t("poli.sim.circuit.cap")} (C){load === "tubos" ? `: ${fmt(tubosC, 1)} µF` : ""}
+        </p>
+      ) : null}
+      {!lamp && load !== "sinCarga" ? (
         <p className="mt-1 text-xs text-neutral-500 dark:text-neutral-400">
           {t("poli.sim.circuit.noteSocket")}
         </p>

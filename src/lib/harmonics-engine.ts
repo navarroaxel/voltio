@@ -27,6 +27,13 @@ export const MAX_ORDER = 25;
 export const V_NOMINAL = 230;
 
 const DEG = Math.PI / 180;
+
+function wrapDeg(a: number): number {
+  let x = a;
+  while (x > 180) x -= 360;
+  while (x <= -180) x += 360;
+  return x;
+}
 const SQRT2 = Math.SQRT2;
 
 // ─── Tensión de red ──────────────────────────────────────────────────────────
@@ -73,13 +80,40 @@ export function voltageSamples(grid: GridVoltage, cycles = CYCLES): Float64Array
 
 // ─── Modelos de carga ────────────────────────────────────────────────────────
 
+/**
+ * Ruido de la red en la corriente medida (todas las cargas): líneas de igual
+ * valor eficaz en armónicas altas NO múltiplo de 3 (así se anulan en el neutro
+ * equilibrado). El espectro es una suposición: las capturas no lo tienen.
+ */
+const NOISE_ORDERS = [11, 13, 17, 19, 23, 25];
+/**
+ * Valor eficaz del ruido (A) por unidad de THD de tensión. Es un piso ABSOLUTO,
+ * igual para toda carga. Calibrado con el trafo electrónico en vacío (BDEM:
+ * ≈ 9,3 mA con THD_V = 2,4 %) y consistente con la halógena (AHM: THD_I 4,5 %
+ * con I₁ = 0,27 A ⇒ ≈ 10 mA). El informe lo atribuye al ruido o a la red.
+ */
+export const GRID_NOISE_A_PER_THD = 0.388;
+
 export type Load =
+  /**
+   * Sin carga: corriente residual. Fuga lineal R ∥ C (responde a la tensión
+   * de la red como cualquier carga lineal). El ruido que domina su THD no es
+   * propio de esta carga: es el ruido de la red (ver `GRID_NOISE_A_PER_THD`).
+   */
+  | { kind: "residual"; R: number; C: number }
   /** Resistiva pura (lámpara halógena). */
   | { kind: "resistive"; R: number }
   /** R-L serie con capacitor opcional en paralelo (tubos fluorescentes). */
   | { kind: "rl"; R: number; L: number; C: number }
-  /** Capacitor puro (banco de capacitores). */
-  | { kind: "capacitor"; C: number }
+  /**
+   * Capacitor puro (banco de capacitores). La forma de onda es la ideal
+   * (90° exactos, sin potencia activa). El Fluke midió 95° con una red
+   * distorsionada (THD_V 2,4 %): artefacto de medición, no física del
+   * capacitor, así que se aplica sólo al ángulo que muestra el analizador
+   * (`phaseArtifactDeg`), en `phaseErrDegPerThd` grados por unidad de THD de
+   * tensión (0° con red ideal). Calibrado con la captura.
+   */
+  | { kind: "capacitor"; C: number; phaseErrDegPerThd?: number }
   /** Puente rectificador + capacitor de filtro + carga (bajo consumo, LED). */
   | { kind: "rectifier"; C: number; RL: number; Rs: number }
   /**
@@ -94,6 +128,8 @@ function linearAdmittance(load: Load, h: number): [number, number] {
   switch (load.kind) {
     case "resistive":
       return [1 / load.R, 0];
+    case "residual":
+      return [1 / load.R, w * load.C];
     case "capacitor":
       return [0, w * load.C];
     case "rl": {
@@ -107,8 +143,33 @@ function linearAdmittance(load: Load, h: number): [number, number] {
   }
 }
 
-/** Muestras de la corriente de una carga para la tensión dada. */
+/**
+ * Corriente medida de una carga: la de la carga (`loadCurrentClean`) más el
+ * ruido de la red, que es el mismo piso absoluto para toda carga y vale 0 con
+ * red ideal.
+ */
 export function loadCurrent(
+  load: Load,
+  grid: GridVoltage,
+  cycles = CYCLES,
+): Float64Array {
+  const out = loadCurrentClean(load, grid, cycles);
+  const rms = GRID_NOISE_A_PER_THD * thdV(grid);
+  if (rms <= 0) return out;
+  const per = rms / Math.sqrt(NOISE_ORDERS.length);
+  for (let k = 0; k < out.length; k++) {
+    const th = (2 * Math.PI * k) / SAMPLES_PER_CYCLE;
+    let n = 0;
+    NOISE_ORDERS.forEach((o, j) => {
+      n += Math.sin(o * th + j * 2.399963);
+    });
+    out[k] += SQRT2 * per * n;
+  }
+  return out;
+}
+
+/** Muestras de la corriente de una carga para la tensión dada (sin ruido). */
+export function loadCurrentClean(
   load: Load,
   grid: GridVoltage,
   cycles = CYCLES,
@@ -120,7 +181,8 @@ export function loadCurrent(
   if (
     load.kind === "resistive" ||
     load.kind === "rl" ||
-    load.kind === "capacitor"
+    load.kind === "capacitor" ||
+    load.kind === "residual"
   ) {
     // Carga lineal: se resuelve armónica por armónica (exacto).
     const terms = hs.map((h) => {
@@ -192,6 +254,8 @@ export interface Analysis {
   thdI: number;
   /** RMS de cada armónica, índice 0 = orden 1, … hasta MAX_ORDER. */
   spectrum: number[];
+  /** Fase absoluta de cada armónica (rad, sen-referida); índice 0 = orden 1. */
+  phases: number[];
   /** Pico (A). */
   peak: number;
   /** Potencia activa (W) y aparente (VA) y factor de potencia. */
@@ -238,10 +302,12 @@ export function analyze(i: ArrayLike<number>, v: ArrayLike<number>): Analysis {
   const S = Vrms * Irms;
 
   const spectrum: number[] = [];
+  const phases: number[] = [];
   let phaseI1 = 0;
   for (let h = 1; h <= MAX_ORDER; h++) {
     const d = dft(i, start, h);
     spectrum.push(d.mag);
+    phases.push(d.phase);
     if (h === 1) phaseI1 = d.phase;
   }
   const phaseV1 = dft(v, start, 1).phase;
@@ -260,6 +326,7 @@ export function analyze(i: ArrayLike<number>, v: ArrayLike<number>): Analysis {
     phi1Deg: phi,
     thdI: I1 > 1e-12 ? harm / I1 : 0,
     spectrum,
+    phases,
     peak,
     P,
     S,
@@ -287,6 +354,13 @@ export interface NeutralResult {
   samples: number[];
 }
 
+/** Artefacto de medición del ángulo de I₁ (°): sólo afecta a lo que se muestra. */
+export function phaseArtifactDeg(load: Load, grid: GridVoltage): number {
+  return load.kind === "capacitor"
+    ? (load.phaseErrDegPerThd ?? 0) * thdV(grid)
+    : 0;
+}
+
 export interface SimResult {
   /** Dos últimos ciclos, tiempo en ms. */
   t: number[];
@@ -299,13 +373,20 @@ export interface SimResult {
   neutral: NeutralResult;
   /** Cantidad de fases con carga. */
   loadedPhases: number;
+  /** Artefacto de medición a sumar al ángulo mostrado de la fundamental (°). */
+  phaseArtifactDeg: number;
 }
 
 export function simulate(input: SimInput): SimResult {
   const { grid, load, connection } = input;
   const v = voltageSamples(grid);
   const iR = loadCurrent(load, grid);
-  const phase = analyze(iR, v);
+  const art = phaseArtifactDeg(load, grid);
+  const phaseIdeal = analyze(iR, v);
+  const phase = {
+    ...phaseIdeal,
+    phi1Deg: wrapDeg(phaseIdeal.phi1Deg + art),
+  };
 
   const loadedPhases =
     connection === "mono" ? 1 : connection === "bifasica" ? 2 : 3;
@@ -351,5 +432,6 @@ export function simulate(input: SimInput): SimResult {
       samples: nn,
     },
     loadedPhases,
+    phaseArtifactDeg: art,
   };
 }
