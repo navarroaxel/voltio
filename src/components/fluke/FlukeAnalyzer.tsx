@@ -4,6 +4,7 @@ import { useEffect, useReducer, useRef, useState } from "react";
 import { useLanguage } from "@/i18n/LanguageContext";
 import type { FlukeModel } from "@/lib/fluke-view";
 import {
+  describeScreen,
   drawScreen,
   H,
   HARM_ZOOMS,
@@ -126,9 +127,7 @@ export function FlukeAnalyzer({ model }: { model: FlukeModel }) {
   }, [model, st, t, width]);
 
   const keys = softKeys(st, t);
-  const screenName = t(`poli.fluke.title.${st.screen}`);
-  const p0 = model.phases[0];
-  const aria = `${screenName}. ${t("poli.fluke.sim")}: Vrms ${p0.Vrms.toFixed(1)} V, Irms ${p0.Irms.toFixed(3)} A, THD I ${(p0.thdI * 100).toFixed(1)} %.`;
+  const aria = describeScreen(model, st, t);
 
   return (
     <div className="mx-auto w-full max-w-[560px] rounded-[26px] bg-gradient-to-b from-neutral-700 to-neutral-900 p-3 shadow-xl ring-1 ring-black/50 sm:p-4">

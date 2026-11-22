@@ -270,7 +270,7 @@ export const es: Record<string, string> = {
   "poli.sim.model.trafoVacio":
     "Rama de magnetización saturable (i = a·λ + b·λ⁷) con pérdidas en el hierro, ajustada con BDCVM2. Al subir U₁ aumenta la saturación.",
   "poli.sim.model.bancoCapacitores":
-    "Capacitor puro calculado con U e I₁ de la foto del banco (2026). La corriente de cada armónica es h·ω·C·V_h. Un capacitor ideal da φ = 90°; en la foto el fasorial marcó +95° con la red distorsionada del día. Se modela como un corrimiento proporcional a la distorsión de tensión (0° con red ideal, +5° con THD_V = 2,4 %).",
+    "Capacitor puro calculado con U e I₁ de la foto del banco (2026). La corriente de cada armónica es h·ω·C·V_h. Un capacitor ideal da φ = 90°; en la foto el fasorial marcó +95° con la red distorsionada del día. Se modela como un corrimiento, proporcional a la distorsión de tensión (0° con red ideal, +5° con THD_V = 2,4 %), sólo del ángulo que muestra el analizador: la onda y la potencia siguen siendo las de un capacitor ideal (P ≈ 0).",
   "poli.sim.circuit.title": "Circuito y tablero de lámparas",
   "poli.sim.circuit.on": "Encendido",
   "poli.sim.circuit.legend.on": "Lámpara encendida",
@@ -327,6 +327,7 @@ export const es: Record<string, string> = {
   "poli.fluke.row.cfV": "FC tensión",
   "poli.fluke.row.cfA": "FC corriente",
   "poli.fluke.row.pf": "FP",
+  "poli.fluke.aria.harmonic": "Armónica",
 };
 
 export const en: Record<string, string> = {
@@ -601,7 +602,7 @@ export const en: Record<string, string> = {
   "poli.sim.model.trafoVacio":
     "Saturable magnetizing branch (i = a·λ + b·λ⁷) with core losses, fitted with BDCVM2. Raising U₁ increases saturation.",
   "poli.sim.model.bancoCapacitores":
-    "Pure capacitor computed from U and I₁ in the bank photo (2026). The current of each harmonic is h·ω·C·V_h. An ideal capacitor gives φ = 90°; in the photo the phasor read +95° with that day's distorted grid. It is modeled as a shift proportional to the voltage distortion (0° with an ideal grid, +5° at THD_V = 2.4 %).",
+    "Pure capacitor computed from U and I₁ in the bank photo (2026). The current of each harmonic is h·ω·C·V_h. An ideal capacitor gives φ = 90°; in the photo the phasor read +95° with that day's distorted grid. It is modeled as a shift, proportional to the voltage distortion (0° with an ideal grid, +5° at THD_V = 2.4 %), of the displayed angle only: the waveform and power stay those of an ideal capacitor (P ≈ 0).",
   "poli.sim.circuit.title": "Circuit and lamp board",
   "poli.sim.circuit.on": "On",
   "poli.sim.circuit.legend.on": "Lamp on",
@@ -658,4 +659,5 @@ export const en: Record<string, string> = {
   "poli.fluke.row.cfV": "CF voltage",
   "poli.fluke.row.cfA": "CF current",
   "poli.fluke.row.pf": "PF",
+  "poli.fluke.aria.harmonic": "Harmonic",
 };

@@ -85,6 +85,8 @@ function wrap180(a: number): number {
 export function flukeModel(sim: SimResult): FlukeModel {
   const vAn = analyze(sim.v, sim.v);
   const refPhase = vAn.phases[0];
+  // Artefacto de medición del ángulo (sólo se muestra; P y FP usan la onda ideal).
+  const art = sim.phaseArtifactDeg;
 
   const rel = (phaseRad: number, order: number, shiftDeg: number) =>
     wrap180((phaseRad - order * refPhase) / DEG - order * shiftDeg);
@@ -111,13 +113,15 @@ export function flukeModel(sim: SimResult): FlukeModel {
       V1: vAn.spectrum[0],
       I1: iAn.I1 * m,
       angV: rel(vAn.phases[0], 1, shiftDeg),
-      angI: rel(iAn.phases[0], 1, shiftDeg),
+      angI: wrap180(rel(iAn.phases[0], 1, shiftDeg) + art),
       thdV: sim.thdV,
       thdI: iAn.thdI * m,
       spectrumV: vAn.spectrum,
       spectrumI: iAn.spectrum.map((x) => x * m),
       angHarmV: vAn.phases.map((p, k) => rel(p, k + 1, shiftDeg)),
-      angHarmI: iAn.phases.map((p, k) => rel(p, k + 1, shiftDeg)),
+      angHarmI: iAn.phases.map((p, k) =>
+        k === 0 ? wrap180(rel(p, 1, shiftDeg) + art) : rel(p, k + 1, shiftDeg),
+      ),
       P: iAn.P * m,
       S: iAn.S * m,
       pf: iAn.pf * m,
@@ -133,9 +137,11 @@ export function flukeModel(sim: SimResult): FlukeModel {
     i: sim.neutral.samples,
     Irms: sim.neutral.Irms,
     I1: nAn.I1,
-    angI: rel(nAn.phases[0], 1, 0),
+    angI: wrap180(rel(nAn.phases[0], 1, 0) + art),
     spectrum: nAn.spectrum,
-    angHarm: nAn.phases.map((p, k) => rel(p, k + 1, 0)),
+    angHarm: nAn.phases.map((p, k) =>
+      k === 0 ? wrap180(rel(p, 1, 0) + art) : rel(p, k + 1, 0),
+    ),
     // Indefinido (NaN → "—") si la fundamental del neutro es nula (carga equilibrada).
     thd: nAn.I1 > 1e-6 ? harm / nAn.I1 : NaN,
     peak: nAn.peak,

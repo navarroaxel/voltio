@@ -27,6 +27,13 @@ export const MAX_ORDER = 25;
 export const V_NOMINAL = 230;
 
 const DEG = Math.PI / 180;
+
+function wrapDeg(a: number): number {
+  let x = a;
+  while (x > 180) x -= 360;
+  while (x <= -180) x += 360;
+  return x;
+}
 const SQRT2 = Math.SQRT2;
 
 // ─── Tensión de red ──────────────────────────────────────────────────────────
@@ -99,11 +106,12 @@ export type Load =
   /** R-L serie con capacitor opcional en paralelo (tubos fluorescentes). */
   | { kind: "rl"; R: number; L: number; C: number }
   /**
-   * Capacitor puro (banco de capacitores). Un capacitor ideal adelanta
-   * exactamente 90°, pero el Fluke midió 95° con una red distorsionada
-   * (THD_V 2,4 %): artefacto de medición, no física del capacitor. Se modela
-   * como un corrimiento de la fundamental de I de `phaseErrDegPerThd` grados
-   * por unidad de THD de tensión (0° con red ideal). Calibrado con la captura.
+   * Capacitor puro (banco de capacitores). La forma de onda es la ideal
+   * (90° exactos, sin potencia activa). El Fluke midió 95° con una red
+   * distorsionada (THD_V 2,4 %): artefacto de medición, no física del
+   * capacitor, así que se aplica sólo al ángulo que muestra el analizador
+   * (`phaseArtifactDeg`), en `phaseErrDegPerThd` grados por unidad de THD de
+   * tensión (0° con red ideal). Calibrado con la captura.
    */
   | { kind: "capacitor"; C: number; phaseErrDegPerThd?: number }
   /** Puente rectificador + capacitor de filtro + carga (bajo consumo, LED). */
@@ -176,20 +184,13 @@ export function loadCurrentClean(
     load.kind === "capacitor" ||
     load.kind === "residual"
   ) {
-    const errDeg =
-      load.kind === "capacitor"
-        ? (load.phaseErrDegPerThd ?? 0) * thdV(grid)
-        : 0;
     // Carga lineal: se resuelve armónica por armónica (exacto).
     const terms = hs.map((h) => {
       const [g, b] = linearAdmittance(load, h.order);
       return {
         order: h.order,
         mag: grid.V1 * h.relative * Math.hypot(g, b),
-        phase:
-          h.phaseDeg * DEG +
-          Math.atan2(b, g) +
-          (h.order === 1 ? errDeg * DEG : 0),
+        phase: h.phaseDeg * DEG + Math.atan2(b, g),
       };
     });
     for (let k = 0; k < total; k++) {
@@ -353,6 +354,13 @@ export interface NeutralResult {
   samples: number[];
 }
 
+/** Artefacto de medición del ángulo de I₁ (°): sólo afecta a lo que se muestra. */
+export function phaseArtifactDeg(load: Load, grid: GridVoltage): number {
+  return load.kind === "capacitor"
+    ? (load.phaseErrDegPerThd ?? 0) * thdV(grid)
+    : 0;
+}
+
 export interface SimResult {
   /** Dos últimos ciclos, tiempo en ms. */
   t: number[];
@@ -365,13 +373,20 @@ export interface SimResult {
   neutral: NeutralResult;
   /** Cantidad de fases con carga. */
   loadedPhases: number;
+  /** Artefacto de medición a sumar al ángulo mostrado de la fundamental (°). */
+  phaseArtifactDeg: number;
 }
 
 export function simulate(input: SimInput): SimResult {
   const { grid, load, connection } = input;
   const v = voltageSamples(grid);
   const iR = loadCurrent(load, grid);
-  const phase = analyze(iR, v);
+  const art = phaseArtifactDeg(load, grid);
+  const phaseIdeal = analyze(iR, v);
+  const phase = {
+    ...phaseIdeal,
+    phi1Deg: wrapDeg(phaseIdeal.phi1Deg + art),
+  };
 
   const loadedPhases =
     connection === "mono" ? 1 : connection === "bifasica" ? 2 : 3;
@@ -417,5 +432,6 @@ export function simulate(input: SimInput): SimResult {
       samples: nn,
     },
     loadedPhases,
+    phaseArtifactDeg: art,
   };
 }

@@ -148,7 +148,9 @@ export default function SimuladorPage() {
               onChange={(k) => dispatch({ type: "SET_LOAD", load: k })}
             />
             <ChartTabs
-              tabs={CONNECTIONS.map((k) => ({
+              // Con capacitores sólo existe la conexión monofásica: no se
+              // ofrecen las otras para que no cambien el estado sin efecto.
+              tabs={(capR ? CONNECTIONS.slice(0, 1) : CONNECTIONS).map((k) => ({
                 key: k,
                 label: t(`poli.sim.conn.${k}`),
               }))}

@@ -168,8 +168,8 @@ describe("efecto de la tensión de red sobre el capacitor", () => {
     };
     const r = run("bancoCapacitores", grid);
     expect(r.thdI).toBeCloseTo(5 * 0.024, 3);
-    // 90° ideales + 5° de artefacto de medición con THD_V = 2,4 % (foto: +95°).
-    expect(r.phi1Deg).toBeCloseTo(95, 1);
+    // La onda es la ideal (90°); el +5° de la foto es sólo de medición (ver `simulate`).
+    expect(r.phi1Deg).toBeCloseTo(90, 1);
   });
 
   it("con tensión senoidal el capacitor toma I₁ = 2,17 A y no distorsiona", () => {
@@ -357,17 +357,30 @@ describe("sin carga (corriente residual, BDEM)", () => {
 });
 
 describe("banco de capacitores: ángulo medido", () => {
+  const at = (g: GridVoltage) =>
+    simulate({ grid: g, load: buildLoad("bancoCapacitores"), connection: "mono" });
+  const dia: GridVoltage = {
+    V1: BANCO_CAPACITORES_2026.V,
+    harmonics: [{ order: 5, relative: 0.024, phaseDeg: 0 }],
+  };
+
   it("red ideal: φ = 90° exactos", () => {
-    const r = run("bancoCapacitores", sine(BANCO_CAPACITORES_2026.V));
-    expect(r.phi1Deg).toBeCloseTo(90, 3);
-    expect(r.I1).toBeCloseTo(2.17, 3);
+    const s = at(sine(BANCO_CAPACITORES_2026.V));
+    expect(s.phase.phi1Deg).toBeCloseTo(90, 3);
+    expect(s.phase.I1).toBeCloseTo(2.17, 3);
   });
 
-  it("con el THD_V del día (2,4 %) reproduce φ ≈ +95° de la foto", () => {
-    const grid: GridVoltage = {
-      V1: BANCO_CAPACITORES_2026.V,
-      harmonics: [{ order: 5, relative: 0.024, phaseDeg: 0 }],
-    };
-    expect(run("bancoCapacitores", grid).phi1Deg).toBeCloseTo(95, 1);
+  it("con el THD_V del día (2,4 %) el fasorial muestra ≈ +95° como la foto", () => {
+    const s = at(dia);
+    expect(s.phase.phi1Deg).toBeCloseTo(95, 1);
+    expect(flukeModel(s).phases[0].angI).toBeCloseTo(95, 1);
+  });
+
+  it("el artefacto es sólo de medición: el capacitor no genera potencia activa", () => {
+    const s = at(dia);
+    // Un capacitor pasivo: P ≈ 0 (nunca negativa) y la onda sigue a 90°.
+    expect(s.phase.P).toBeGreaterThan(-0.5);
+    expect(Math.abs(s.phase.P)).toBeLessThan(0.5);
+    expect(s.phase.pf).toBeGreaterThan(-0.01);
   });
 });

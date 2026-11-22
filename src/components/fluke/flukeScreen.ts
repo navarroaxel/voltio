@@ -624,3 +624,76 @@ export function drawScreen(ctx: CanvasRenderingContext2D, m: FlukeModel, st: Scr
   }
   drawSoftKeys(ctx, softKeys(st, t));
 }
+
+// ─── Descripción accesible ───────────────────────────────────────────────────
+
+/**
+ * Resumen en texto de lo que muestra la pantalla (para lectores de pantalla):
+ * depende de la pantalla, los canales y la armónica seleccionados.
+ */
+export function describeScreen(m: FlukeModel, st: ScreenState, t: T): string {
+  const title = t(`poli.fluke.title.${st.screen}`);
+  const parts: string[] = [`${title}.`, `${t("poli.fluke.sim")}.`];
+  const ph = (id: PhaseId) => m.phases[idx(id)];
+  switch (st.screen) {
+    case "scope": {
+      const { mode, ch, cursor, pos } = st.scope;
+      const ids = chIds(ch);
+      if (mode === "va" || mode === "v")
+        ids.forEach((id) => parts.push(`V ${id} ${fmt(ph(id).Vrms, 2)} V.`));
+      if (mode === "va" || mode === "a")
+        ids.forEach((id) => parts.push(`A ${id} ${fmt(ph(id).Irms, 3)} A.`));
+      if (mode === "n") parts.push(`A N ${fmt(m.neutral.Irms, 3)} A.`);
+      if (cursor) {
+        const N = SAMPLES_PER_CYCLE;
+        const k = Math.round(pos * (CYCLES_SHOWN * N - 1));
+        const at = (x: number[]) => x[k % x.length];
+        const rd: string[] = [`${fmt((k / N) * (1000 / F_LINEA), 1)} ms`];
+        if (mode === "va" || mode === "v")
+          ids.forEach((id) => rd.push(`V ${id} ${fmt(at(ph(id).v), 1)} V`));
+        if (mode === "va" || mode === "a")
+          ids.forEach((id) => rd.push(`A ${id} ${fmt(at(ph(id).i), 3)} A`));
+        if (mode === "n") rd.push(`A N ${fmt(at(m.neutral.i), 3)} A`);
+        parts.push(`${t("poli.fluke.soft.cursor")}: ${rd.join(", ")}.`);
+      }
+      break;
+    }
+    case "phasor": {
+      const { show } = st.phasor;
+      m.phases.forEach((p) => {
+        if (show !== "a") parts.push(`V ${p.id} ${fmt(p.V1, 1)} V, ${fmt(p.angV, 1)}°.`);
+      });
+      m.phases.forEach((p) => {
+        if (show !== "v")
+          parts.push(`A ${p.id} ${fmt(p.I1, 3)} A, ${p.I1 > 1e-6 ? `${fmt(p.angI, 1)}°` : "—"}.`);
+      });
+      if (show !== "v")
+        parts.push(`A N ${fmt(m.neutral.I1, 3)} A, ${m.neutral.I1 > 1e-6 ? `${fmt(m.neutral.angI, 1)}°` : "—"}.`);
+      break;
+    }
+    case "harmonics": {
+      const s = harmSeries(m, st.harm);
+      const v = s.values[st.harm.sel] ?? 0;
+      const pct = s.ref > 1e-9 ? (v / s.ref) * 100 : 0;
+      parts.push(
+        `${st.harm.src === "n" ? "N" : `${st.harm.src.toUpperCase()} ${st.harm.ch}`}. THD ${fmt(s.thd * 100, 1)} %. ${s.unit === "A" ? `${fmt(s.rms, 3)} A` : `${fmt(s.rms, 2)} V`}.`,
+        `${t("poli.fluke.aria.harmonic")} ${st.harm.sel + 1}: ${fmt(pct, 1)} %, ${fmt(v, s.unit === "V" ? 2 : 4)} ${s.unit}, ${v > 1e-6 ? `${fmt(s.angles[st.harm.sel] ?? 0, 0)}°` : "—"}.`,
+      );
+      break;
+    }
+    case "meter":
+      m.phases.forEach((p) =>
+        parts.push(
+          `${p.id}: ${fmt(p.Vrms, 1)} V, ${fmt(p.Irms, 3)} A, THD V ${fmt(p.thdV * 100, 1)} %, THD A ${p.loaded ? fmt(p.thdI * 100, 1) : "—"} %, P ${fmt(p.P, 1)} W.`,
+        ),
+      );
+      parts.push(`N: ${fmt(m.neutral.Irms, 3)} A.`);
+      break;
+  }
+  const soft = softKeys(st, t)
+    .map((k, i) => (k ? `F${i + 1} ${softLabel(k)}` : ""))
+    .filter(Boolean)
+    .join(", ");
+  parts.push(soft);
+  return parts.join(" ");
+}
