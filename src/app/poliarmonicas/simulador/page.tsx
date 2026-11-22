@@ -7,12 +7,13 @@ import { DataTable } from "@/components/sim/DataTable";
 import { MetricsGrid, type Metric } from "@/components/sim/MetricsGrid";
 import { SliderField } from "@/components/sim/SliderField";
 import { BancoSchematic } from "@/components/sim/BancoSchematic";
-import { LineChart, type Series } from "@/components/charts/LineChart";
-import { SpectrumChart } from "@/components/charts/SpectrumChart";
+import { FlukeAnalyzer } from "@/components/fluke/FlukeAnalyzer";
+import { flukeModel } from "@/lib/fluke-view";
 import { usePoliarmonicas, type GridField } from "@/store/poliarmonicas-store";
 import { simulate, type Connection } from "@/lib/harmonics-engine";
 import {
   buildLoad,
+  capacitorsOnlyInR,
   estimateThd,
   gridFromSettings,
   GRID_PRESETS,
@@ -34,7 +35,6 @@ import { renderSub } from "@/components/ui/Sub";
 const CONNECTIONS: Connection[] = ["mono", "bifasica", "trifasica"];
 const PRESETS = ["ideal", "dia", "distorsionada"] as const;
 type TubosKey = TubosPreset;
-const DRAW_STEP = 4; // submuestreo para los gráficos temporales
 
 export default function SimuladorPage() {
   const { t } = useLanguage();
@@ -49,17 +49,21 @@ export default function SimuladorPage() {
     () => buildLoad(state.load, state.tubosC),
     [state.load, state.tubosC],
   );
+  const capR = capacitorsOnlyInR(state.load, state.tubosC);
+  const connection = capR ? "mono" : state.connection;
   const sim = useMemo(
-    () => simulate({ grid, load, connection: state.connection }),
-    [grid, load, state.connection],
+    () => simulate({ grid, load, connection }),
+    [grid, load, connection],
   );
+
+  const fluke = useMemo(() => flukeModel(sim), [sim]);
 
   const setGrid = (field: GridField) => (value: number) =>
     dispatch({ type: "SET_GRID", field, value });
 
   const p = sim.phase;
   const n = sim.neutral;
-  const multi = state.connection !== "mono";
+  const multi = connection !== "mono";
 
   const metrics: Metric[] = [
     { label: t("poli.sim.m.thdV"), value: fmt(sim.thdV * 100, 1), unit: "%", accent: "violet" },
@@ -76,39 +80,7 @@ export default function SimuladorPage() {
       : []),
   ];
 
-  const pts = (ys: number[]) =>
-    ys.flatMap((y, i) =>
-      i % DRAW_STEP === 0 ? [{ x: sim.t[i], y }] : [],
-    );
-  const voltageSeries: Series[] = [
-    { label: "u", color: "#2563eb", points: pts(sim.v) },
-  ];
-  const currentSeries: Series[] = [
-    { label: "i_R", color: "#dc2626", points: pts(sim.iPhase) },
-    ...(multi
-      ? [{ label: "i_N", color: "#d97706", points: pts(n.samples), dashed: true }]
-      : []),
-  ];
-
-  const pct = (x: number) => (p.I1 > 1e-9 ? (x / p.I1) * 100 : 0);
-  const spectrumSeries = [
-    {
-      label: t("poli.sim.chart.phaseSeries"),
-      color: "#dc2626",
-      values: p.spectrum.map(pct),
-    },
-    ...(multi
-      ? [
-          {
-            label: t("poli.sim.chart.neutralSeries"),
-            color: "#d97706",
-            values: n.spectrum.map(pct),
-          },
-        ]
-      : []),
-  ];
-
-  const ref = measuredReference(state.load, state.connection, state.tubosC);
+  const ref = measuredReference(state.load, connection, state.tubosC);
   const refThd = ref ? estimateThd(ref.I[0], ref.I1) : null;
   const refRatio = ref ? neutralRatio(ref) : null;
   const refThdMeas = ref ? (THD_MEASURED[ref.id] ?? null) : null;
@@ -156,7 +128,14 @@ export default function SimuladorPage() {
         </p>
       </header>
 
-      <div className="grid grid-cols-1 gap-5 lg:grid-cols-2">
+      <div className="grid grid-cols-1 items-start gap-5 lg:grid-cols-[minmax(0,1.1fr)_minmax(0,1fr)]">
+        <Card title={t("poli.fluke.title")} className="lg:sticky lg:top-4">
+          <FlukeAnalyzer model={fluke} />
+          <p className="mt-3 text-xs text-neutral-500 dark:text-neutral-400">
+            {t("poli.fluke.help")}
+          </p>
+        </Card>
+        <div className="space-y-5">
         <Card title={t("poli.sim.load.title")}>
           <div className="space-y-4">
             <ChartTabs
@@ -173,10 +152,15 @@ export default function SimuladorPage() {
                 key: k,
                 label: t(`poli.sim.conn.${k}`),
               }))}
-              active={state.connection}
+              active={connection}
               label={t("poli.sim.conn.label")}
               onChange={(k) => dispatch({ type: "SET_CONNECTION", connection: k })}
             />
+            {capR ? (
+              <p className="text-xs text-neutral-500 dark:text-neutral-400">
+                {t("poli.sim.conn.capOnlyR")}
+              </p>
+            ) : null}
             {state.load === "tubos" ? (
               <div className="space-y-2">
                 <ChartTabs<TubosKey>
@@ -289,12 +273,13 @@ export default function SimuladorPage() {
             />
           </div>
         </Card>
+        </div>
       </div>
 
       <Card title={t("poli.sim.circuit.title")}>
         <BancoSchematic
           load={state.load}
-          connection={state.connection}
+          connection={connection}
           tubosC={state.tubosC}
           iPhase={p.Irms}
           iNeutral={n.Irms}
@@ -303,37 +288,6 @@ export default function SimuladorPage() {
 
       <Card>
         <MetricsGrid metrics={metrics} />
-      </Card>
-
-      <div className="grid grid-cols-1 gap-5 lg:grid-cols-2">
-        <Card title={t("poli.sim.chart.voltage")}>
-          <LineChart
-            series={voltageSeries}
-            xLabel={t("poli.sim.chart.timeAxis")}
-            yLabel={t("poli.sim.chart.voltageAxis")}
-            yFromZero={false}
-            yDecimals={0}
-            xDecimals={0}
-          />
-        </Card>
-        <Card title={t("poli.sim.chart.current")}>
-          <LineChart
-            series={currentSeries}
-            xLabel={t("poli.sim.chart.timeAxis")}
-            yLabel={t("poli.sim.chart.currentAxis")}
-            yFromZero={false}
-            yDecimals={2}
-            xDecimals={0}
-          />
-        </Card>
-      </div>
-
-      <Card title={t("poli.sim.chart.spectrum")}>
-        <SpectrumChart
-          series={spectrumSeries}
-          xLabel={t("poli.sim.chart.orderAxis")}
-          yLabel={t("poli.sim.chart.spectrumAxis")}
-        />
       </Card>
 
       <Card title={t("poli.sim.cmp.title")}>
@@ -373,6 +327,7 @@ export default function SimuladorPage() {
           <li>{renderSub(t("poli.sim.limits.item1"))}</li>
           <li>{renderSub(t("poli.sim.limits.item2"))}</li>
           <li>{renderSub(t("poli.sim.limits.item3"))}</li>
+          <li>{renderSub(t("poli.sim.limits.item4"))}</li>
         </ul>
       </Card>
     </main>

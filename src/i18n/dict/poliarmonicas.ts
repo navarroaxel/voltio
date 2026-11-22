@@ -192,6 +192,7 @@ export const es: Record<string, string> = {
   "poli.sim.banner":
     "SIMULACIÓN: estos valores se calculan con modelos simplificados. No son mediciones.",
   "poli.sim.load.title": "Carga",
+  "poli.sim.load.sinCarga": "Sin carga",
   "poli.sim.load.halogena": "Halógena (lineal, R)",
   "poli.sim.load.tubos": "Tubos 2×36 W (R-L)",
   "poli.sim.load.bajoConsumo": "Bajo consumo",
@@ -246,7 +247,7 @@ export const es: Record<string, string> = {
   "poli.sim.cmp.none":
     "No hay un ensayo medido equivalente para esta combinación.",
   "poli.sim.cmp.thdNote":
-    "El THD_I medido es el que anotó un compañero. El THD simulado se calibró con I_RMS e I₁ de las capturas, así que puede diferir bastante del medido (sobre todo en LED y en el trafo en vacío).",
+    "El THD_I medido es el que anotó un compañero. El THD simulado sale de I_RMS e I₁ de las capturas (con las que se calibró) y el medido es la lectura directa del Fluke: en el informe no coinciden entre sí (p. ej. LED: 153 % contra 93,8 %), así que el simulado puede diferir bastante del medido, sobre todo en LED y en el trafo en vacío. Los tubos se modelan lineales: su THD propio (≈ 11 %) no se reproduce.",
   "poli.sim.cmp.measured": "Medido",
   "poli.sim.cmp.simulated": "Simulado",
   "poli.sim.cmp.ref": "Ensayo de referencia",
@@ -261,10 +262,15 @@ export const es: Record<string, string> = {
     "Puente rectificador con capacitor de filtro, ajustado con I_RMS, I₁ y φ₁ de BBCM2. Reproduce la corriente en pulsos y el aumento del neutro.",
   "poli.sim.model.led":
     "Puente rectificador con capacitor de filtro, ajustado con I_RMS, I₁ y φ₁ de BLM1/BLM3.",
+  "poli.sim.model.sinCarga":
+    "Corriente residual del trafo electrónico en vacío (BDEM): ≈ 17 mA, φ = +5° y THD ≈ 65 % (con la red del día). Una fuga lineal muy chica: con una fundamental de ≈ 14 mA, el ruido de la red (≈ 9 mA con la red del día, el mismo para toda carga) hace que el THD de corriente sea enorme aunque la carga casi no exista. El informe atribuye ese THD a ruido o a la red.",
+  "poli.sim.circuit.cap": "Capacitor",
+  "poli.sim.conn.capOnlyR":
+    "Los capacitores sólo se ensayaron en la fase R: con ellos el simulador es monofásico.",
   "poli.sim.model.trafoVacio":
     "Rama de magnetización saturable (i = a·λ + b·λ⁷) con pérdidas en el hierro, ajustada con BDCVM2. Al subir U₁ aumenta la saturación.",
   "poli.sim.model.bancoCapacitores":
-    "Capacitor puro calculado con U e I₁ de la foto del banco (2026). La corriente de cada armónica es h·ω·C·V_h.",
+    "Capacitor puro calculado con U e I₁ de la foto del banco (2026). La corriente de cada armónica es h·ω·C·V_h. Un capacitor ideal da φ = 90°; en la foto el fasorial marcó +95° con la red distorsionada del día. Se modela como un corrimiento proporcional a la distorsión de tensión (0° con red ideal, +5° con THD_V = 2,4 %).",
   "poli.sim.circuit.title": "Circuito y tablero de lámparas",
   "poli.sim.circuit.on": "Encendido",
   "poli.sim.circuit.legend.on": "Lámpara encendida",
@@ -286,6 +292,41 @@ export const es: Record<string, string> = {
     "Con red ideal, tubos y halógena son lineales: el THD_I sólo aparece si distorsionás la tensión.",
   "poli.sim.limits.item3":
     "Los tres neutros trifásicos usan tres cargas idénticas con tensiones desfasadas 120°; el desbalance es sólo por fases apagadas.",
+  "poli.sim.limits.item4":
+    "Toda corriente incluye un ruido de la red de ≈ 9 mA (armónicas 11 a 25) con la red del día, proporcional a la distorsión de tensión y nulo con red ideal. Se calibró con el trafo electrónico en vacío y es coherente con la halógena (THD 4,5 % con THD de tensión 2,4 %). El espectro del ruido es una suposición: las capturas no lo tienen.",
+
+  // ── Analizador (pantalla estilo Fluke 435) ──
+  "poli.fluke.title": "Analizador de calidad de energía (simulado)",
+  "poli.fluke.help":
+    "Réplica de la interfaz del Fluke 435 usado en el laboratorio: cambiá de pantalla con las teclas inferiores, usá F1–F5 (o tocá la pantalla) para elegir canales, cursor, zoom y unidades, y las flechas para mover el cursor o la armónica seleccionada. Los canales L2 y L3 son copias de L1 desfasadas 120° y 240°. En ARMÓNICAS, el neutro se expresa como porcentaje de la fundamental de la corriente de fase.",
+  "poli.fluke.brand": "ANALIZADOR",
+  "poli.fluke.model": "calidad de energía · estilo Fluke 435",
+  "poli.fluke.sim": "SIMULACIÓN",
+  "poli.fluke.title.scope": "VOLTIOS/AMPERIOS/HERCIOS - OSCILOSCOPIO",
+  "poli.fluke.title.phasor": "VOLTIOS/AMPERIOS/HERCIOS - FASORES",
+  "poli.fluke.title.harmonics": "ARMÓNICAS",
+  "poli.fluke.title.meter": "VOLTIOS/AMPERIOS/HERCIOS - MEDIDOR",
+  "poli.fluke.key.scope": "OSCILOSC.",
+  "poli.fluke.key.phasor": "FASORES",
+  "poli.fluke.key.harmonics": "ARMÓNICAS",
+  "poli.fluke.key.meter": "MEDIDOR",
+  "poli.fluke.keys.modes": "Pantallas",
+  "poli.fluke.keys.arrows": "Flechas",
+  "poli.fluke.arrow.up": "Arriba",
+  "poli.fluke.arrow.down": "Abajo",
+  "poli.fluke.arrow.left": "Izquierda",
+  "poli.fluke.arrow.right": "Derecha",
+  "poli.fluke.soft.back": "VOLVER",
+  "poli.fluke.soft.cursor": "CURSOR",
+  "poli.fluke.soft.on": "ON",
+  "poli.fluke.soft.off": "OFF",
+  "poli.fluke.soft.zoom": "ZOOM",
+  "poli.fluke.phasor.fund": "Fundamental (módulo y ángulo)",
+  "poli.fluke.row.vpk": "Vpico (V)",
+  "poli.fluke.row.apk": "Apico (A)",
+  "poli.fluke.row.cfV": "FC tensión",
+  "poli.fluke.row.cfA": "FC corriente",
+  "poli.fluke.row.pf": "FP",
 };
 
 export const en: Record<string, string> = {
@@ -482,6 +523,7 @@ export const en: Record<string, string> = {
   "poli.sim.banner":
     "SIMULATION: these values come from simplified models. They are not measurements.",
   "poli.sim.load.title": "Load",
+  "poli.sim.load.sinCarga": "No load",
   "poli.sim.load.halogena": "Halogen (linear, R)",
   "poli.sim.load.tubos": "Tubes 2×36 W (R-L)",
   "poli.sim.load.bajoConsumo": "CFL",
@@ -536,7 +578,7 @@ export const en: Record<string, string> = {
   "poli.sim.cmp.none":
     "There is no equivalent measured test for this combination.",
   "poli.sim.cmp.thdNote":
-    "The measured THD_I is the one a classmate noted down. The simulated THD was calibrated with I_RMS and I₁ from the captures, so it can differ quite a lot from the measured one (mostly for LED and the unloaded transformer).",
+    "The measured THD_I is the one a classmate noted down. The simulated THD comes from the I_RMS and I₁ of the captures (used for calibration) while the measured one is the Fluke's direct reading: in the report they do not agree with each other (e.g. LED: 153 % vs 93.8 %), so the simulated value can differ a lot from the measured one, mostly for LED and the unloaded transformer. The tubes are modeled as linear: their own THD (≈ 11 %) is not reproduced.",
   "poli.sim.cmp.measured": "Measured",
   "poli.sim.cmp.simulated": "Simulated",
   "poli.sim.cmp.ref": "Reference test",
@@ -551,10 +593,15 @@ export const en: Record<string, string> = {
     "Bridge rectifier with filter capacitor, fitted with I_RMS, I₁ and φ₁ from BBCM2. It reproduces the pulsed current and the neutral increase.",
   "poli.sim.model.led":
     "Bridge rectifier with filter capacitor, fitted with I_RMS, I₁ and φ₁ from BLM1/BLM3.",
+  "poli.sim.model.sinCarga":
+    "Residual current of the electronic transformer with no load (BDEM): ≈ 17 mA, φ = +5° and THD ≈ 65 % (with that day's grid). A very small linear leakage: with a ≈ 14 mA fundamental, the grid noise (≈ 9 mA with that day's grid, the same for any load) makes the current THD huge even though there is almost no load. The report attributes that THD to noise or the grid.",
+  "poli.sim.circuit.cap": "Capacitor",
+  "poli.sim.conn.capOnlyR":
+    "The capacitors were only tested on phase R: with them the simulator is single-phase.",
   "poli.sim.model.trafoVacio":
     "Saturable magnetizing branch (i = a·λ + b·λ⁷) with core losses, fitted with BDCVM2. Raising U₁ increases saturation.",
   "poli.sim.model.bancoCapacitores":
-    "Pure capacitor computed from U and I₁ in the bank photo (2026). The current of each harmonic is h·ω·C·V_h.",
+    "Pure capacitor computed from U and I₁ in the bank photo (2026). The current of each harmonic is h·ω·C·V_h. An ideal capacitor gives φ = 90°; in the photo the phasor read +95° with that day's distorted grid. It is modeled as a shift proportional to the voltage distortion (0° with an ideal grid, +5° at THD_V = 2.4 %).",
   "poli.sim.circuit.title": "Circuit and lamp board",
   "poli.sim.circuit.on": "On",
   "poli.sim.circuit.legend.on": "Lamp on",
@@ -576,4 +623,39 @@ export const en: Record<string, string> = {
     "With an ideal grid, tubes and halogen are linear: THD_I only appears if you distort the voltage.",
   "poli.sim.limits.item3":
     "The three-phase neutrals use three identical loads with voltages 120° apart; unbalance only comes from switched-off phases.",
+  "poli.sim.limits.item4":
+    "Every current includes ≈ 9 mA of grid noise (harmonics 11 to 25) with that day's grid, proportional to the voltage distortion and zero with an ideal grid. It was calibrated with the electronic transformer with no load and is consistent with the halogen lamp (THD 4.5 % with voltage THD 2.4 %). The noise spectrum is an assumption: the captures have none.",
+
+  // ── Analyzer (Fluke 435-style screen) ──
+  "poli.fluke.title": "Power quality analyzer (simulated)",
+  "poli.fluke.help":
+    "Replica of the Fluke 435 interface used in the lab: switch screens with the lower keys, use F1–F5 (or tap the screen) to pick channels, cursor, zoom and units, and the arrows to move the cursor or the selected harmonic. Channels L2 and L3 are copies of L1 shifted by 120° and 240°. On HARMONICS, the neutral is shown as a percentage of the phase-current fundamental.",
+  "poli.fluke.brand": "ANALYZER",
+  "poli.fluke.model": "power quality · Fluke 435 style",
+  "poli.fluke.sim": "SIMULATION",
+  "poli.fluke.title.scope": "VOLTS/AMPERES/HERTZ - SCOPE",
+  "poli.fluke.title.phasor": "VOLTS/AMPERES/HERTZ - PHASOR",
+  "poli.fluke.title.harmonics": "HARMONICS",
+  "poli.fluke.title.meter": "VOLTS/AMPERES/HERTZ - METER",
+  "poli.fluke.key.scope": "SCOPE",
+  "poli.fluke.key.phasor": "PHASOR",
+  "poli.fluke.key.harmonics": "HARMONICS",
+  "poli.fluke.key.meter": "METER",
+  "poli.fluke.keys.modes": "Screens",
+  "poli.fluke.keys.arrows": "Arrows",
+  "poli.fluke.arrow.up": "Up",
+  "poli.fluke.arrow.down": "Down",
+  "poli.fluke.arrow.left": "Left",
+  "poli.fluke.arrow.right": "Right",
+  "poli.fluke.soft.back": "BACK",
+  "poli.fluke.soft.cursor": "CURSOR",
+  "poli.fluke.soft.on": "ON",
+  "poli.fluke.soft.off": "OFF",
+  "poli.fluke.soft.zoom": "ZOOM",
+  "poli.fluke.phasor.fund": "Fundamental (magnitude and angle)",
+  "poli.fluke.row.vpk": "Vpeak (V)",
+  "poli.fluke.row.apk": "Apeak (A)",
+  "poli.fluke.row.cfV": "CF voltage",
+  "poli.fluke.row.cfA": "CF current",
+  "poli.fluke.row.pf": "PF",
 };

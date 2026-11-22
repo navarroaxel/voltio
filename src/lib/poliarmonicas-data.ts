@@ -14,7 +14,12 @@
  *     nunca debe presentarse como medido.
  */
 
-import { OMEGA, type GridVoltage, type Load } from "./harmonics-engine";
+import {
+  GRID_NOISE_A_PER_THD,
+  OMEGA,
+  type GridVoltage,
+  type Load,
+} from "./harmonics-engine";
 
 // ─── Ensayos medidos ─────────────────────────────────────────────────────────
 
@@ -204,12 +209,15 @@ export const BANCO_CAPACITORES_2026 = {
   V: 219.3,
   Irms: 2.19,
   I1: 2.17,
+  /** φ(A-V) del fasorial: +95° (adelanto). Un capacitor ideal da 90°. */
+  phiDeg: 95,
   thdVPct: 2.4,
 };
 
 // ─── Modelos de carga (parámetros) ──────────────────────────────────────────
 
 export type LoadKey =
+  | "sinCarga"
   | "halogena"
   | "tubos"
   | "bajoConsumo"
@@ -218,6 +226,7 @@ export type LoadKey =
   | "bancoCapacitores";
 
 export const LOAD_KEYS: LoadKey[] = [
+  "sinCarga",
   "halogena",
   "tubos",
   "bajoConsumo",
@@ -269,9 +278,36 @@ export function tubosPreset(cuF: number): TubosPreset {
 }
 export const TUBOS_C_MAX_UF = 20;
 
+/**
+ * Los capacitores (banco y compensación de los tubos) sólo se ensayaron
+ * conectados en la fase R (L1): con ellos el simulador es monofásico.
+ */
+export function capacitorsOnlyInR(key: LoadKey, tubosCuF: number): boolean {
+  return key === "bancoCapacitores" || (key === "tubos" && tubosCuF > 0);
+}
+
 // Banco de capacitores: X_C = U/I₁ (foto de 2026).
 const C_BANCO =
   BANCO_CAPACITORES_2026.I1 / (BANCO_CAPACITORES_2026.V * OMEGA);
+
+/**
+ * Sin carga = lo que midió el Fluke con el trafo electrónico en vacío (BDEM):
+ * I_RMS = 0,017 A, THD ≈ 65,5 % (el informe lo atribuye a ruido), φ = +5°.
+ * Ese THD sale casi todo del ruido de la red (`GRID_NOISE_A_PER_THD`, ≈ 9,3 mA
+ * con THD_V = 2,4 %, igual para toda carga); la fuga R ∥ C aporta el resto:
+ * I₁ = √(I_RMS² − I_ruido²) ≈ 14 mA y φ = +5°. (La lectura I₁ = 0,017 A del
+ * informe está al límite de la resolución y no es compatible con ese THD; se
+ * respetan I_RMS y THD. El THD_V de 2017 no se registró: se supone 2,4 %.)
+ */
+const BDEM_REF = ensayoById("BDEM")!;
+const RESIDUAL = (() => {
+  const U = BDEM_REF.U as number;
+  const noise = GRID_NOISE_A_PER_THD * (BANCO_CAPACITORES_2026.thdVPct / 100);
+  const I1 = Math.sqrt(BDEM_REF.I[0] ** 2 - noise ** 2);
+  const Y = I1 / U;
+  const phi = ((BDEM_REF.phiDeg as number) * Math.PI) / 180;
+  return { R: 1 / (Y * Math.cos(phi)), C: (Y * Math.sin(phi)) / OMEGA };
+})();
 
 /** Parámetros ajustados con scripts/calibrate-harmonics.mjs (ver allí). */
 const RECT_BC = { C: 3.567e-6, RL: 3912, Rs: 75.0 };
@@ -281,6 +317,8 @@ const TRAFO = { a: 0.02926, b: 0.1207, n: 7, Rc: 7049 };
 /** Carga del simulador. `tubosCuF` sólo aplica a "tubos". */
 export function buildLoad(key: LoadKey, tubosCuF = 0): Load {
   switch (key) {
+    case "sinCarga":
+      return { kind: "residual", ...RESIDUAL };
     case "halogena":
       return { kind: "resistive", R: R_HALOGENA };
     case "tubos":
@@ -292,7 +330,15 @@ export function buildLoad(key: LoadKey, tubosCuF = 0): Load {
     case "trafoVacio":
       return { kind: "magnetizing", ...TRAFO };
     case "bancoCapacitores":
-      return { kind: "capacitor", C: C_BANCO };
+      return {
+        kind: "capacitor",
+        C: C_BANCO,
+        // 5° de más sobre los 90° ideales con THD_V = 2,4 %: proporcional a la
+        // distorsión de la red (0° con red ideal).
+        phaseErrDegPerThd:
+          (BANCO_CAPACITORES_2026.phiDeg - 90) /
+          (BANCO_CAPACITORES_2026.thdVPct / 100),
+      };
   }
 }
 
@@ -305,6 +351,9 @@ export function measuredReference(
   const trio = (m: string, b: string, t: string) =>
     ensayoById(connection === "mono" ? m : connection === "bifasica" ? b : t) ?? null;
   switch (key) {
+    case "sinCarga":
+      // La corriente residual está calibrada con el trafo electrónico en vacío.
+      return connection === "mono" ? (ensayoById("BDEM") ?? null) : null;
     case "halogena":
       return trio("AHM", "AHB", "AHT");
     case "bajoConsumo":
