@@ -247,7 +247,7 @@ export const es: Record<string, string> = {
   "poli.sim.cmp.none":
     "No hay un ensayo medido equivalente para esta combinación.",
   "poli.sim.cmp.thdNote":
-    "El THD_I medido es el que anotó un compañero. El THD simulado sale de I_RMS e I₁ de las capturas (con las que se calibró) y el medido es la lectura directa del Fluke: en el informe no coinciden entre sí (p. ej. LED: 153 % contra 93,8 %), así que el simulado puede diferir bastante del medido, sobre todo en LED y en el trafo en vacío. Los tubos se modelan lineales: su THD propio (≈ 11 %) no se reproduce.",
+    "El THD_I medido es el que anotó un compañero. El THD simulado se calcula con la corriente simulada (cambia con la distorsión de la red). El modelo se calibró para reproducir I_RMS e I₁ de las capturas, y con esas lecturas el THD estimado de la captura es otro número que el que mostró el Fluke (p. ej. LED: 153 % estimado contra 93,8 % medido). Por eso el simulado puede diferir bastante del medido, sobre todo en LED y en el trafo en vacío. Los tubos se modelan lineales: su THD propio (≈ 11 %) no se reproduce.",
   "poli.sim.cmp.measured": "Medido",
   "poli.sim.cmp.simulated": "Simulado",
   "poli.sim.cmp.ref": "Ensayo de referencia",
@@ -579,7 +579,7 @@ export const en: Record<string, string> = {
   "poli.sim.cmp.none":
     "There is no equivalent measured test for this combination.",
   "poli.sim.cmp.thdNote":
-    "The measured THD_I is the one a classmate noted down. The simulated THD comes from the I_RMS and I₁ of the captures (used for calibration) while the measured one is the Fluke's direct reading: in the report they do not agree with each other (e.g. LED: 153 % vs 93.8 %), so the simulated value can differ a lot from the measured one, mostly for LED and the unloaded transformer. The tubes are modeled as linear: their own THD (≈ 11 %) is not reproduced.",
+    "The measured THD_I is the one a classmate noted down. The simulated THD is computed from the simulated current (it changes with grid distortion). The model was calibrated to reproduce the I_RMS and I₁ of the captures, and from those readings the capture-derived THD estimate is a different number from the one the Fluke showed (e.g. LED: 153 % estimated vs 93.8 % measured). So the simulated value can differ a lot from the measured one, mostly for LED and the unloaded transformer. The tubes are modeled as linear: their own THD (≈ 11 %) is not reproduced.",
   "poli.sim.cmp.measured": "Measured",
   "poli.sim.cmp.simulated": "Simulated",
   "poli.sim.cmp.ref": "Reference test",
